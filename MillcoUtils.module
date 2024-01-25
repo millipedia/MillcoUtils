@@ -39,16 +39,10 @@ class MillcoUtils extends Process implements Module, ConfigurableModule {
   }
 
   // Add config fields.
-  function getModuleConfigInputfields($data) {
+  function getModuleConfigInputfields(InputfieldWrapper $inputfields) {
 
-    $defaultData = array(
-      'mu_hat' => 'fedora'
-      );
-
-      $data = array_merge($defaultData, $data);
-
-     return $data;
-
+    // actually do I want to do these here we have them on the page?
+    return $inputfields;
   }
 
     /**
