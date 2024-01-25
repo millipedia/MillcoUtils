@@ -15,7 +15,6 @@
   box-shadow: 2px 2px 4px #666;
   z-index:999;
   cursor:move;
-
 }
 
 .mu_edit_bar a{
@@ -27,11 +26,11 @@
   justify-content: center;
   max-width:fit-content;
   cursor:pointer;
+  color:white;
 }
 
 .mu_edit_bar a:hover{
-  color:blueviolet;
-  color:var(--accent);
+  color: var(--accent, #D6363A);
 }
 
 .mu_edit_bar a svg{
