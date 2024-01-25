@@ -16,8 +16,8 @@ I was spurred into action to put these things into a module by Bernhard's [RockF
 
 # Things it doesn't yet but might one day.
 
-[] Configurable CSP
-[] Open graph ...  this might be better an an include
+- [ ] Configurable CSP
+- [ ] Open graph ...  this might be better an an include
 
 
 stephen at [millipedia.com](https://millipedia.com)

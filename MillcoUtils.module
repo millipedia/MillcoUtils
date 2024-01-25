@@ -75,12 +75,12 @@ class MillcoUtils extends Process implements Module, ConfigurableModule {
 
 
 
-	$admin_page_markup .= '<div class="uk-text-muted">';
+	$admin_page_markup .= '<div class="uk-panel">';
 	$admin_page_markup .= '<div>Processwire Version : ' .	wire('config')->versionName . '</div>';
 	$admin_page_markup .= '<div>PHP version : ' . phpversion('tidy') . '</div>';
 	 $admin_page_markup .= '</div>';
 
-   $admin_page_markup .='<p>And heres a placeholder form for when I get time to implement settings (eg CSP)</p>';
+   $admin_page_markup .='<p>And heres a placeholder form for when I get time to implement settings (eg CSP)- This does nothing as the moment.</p>';
 
    $form = $this->modules->get('InputfieldForm');
 
