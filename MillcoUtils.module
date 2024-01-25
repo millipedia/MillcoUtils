@@ -1,0 +1,165 @@
+<?php namespace ProcessWire;
+
+/**
+ * MillcoUtils
+ * 
+ * Just a collection of things we like to have in a site.
+ */
+
+
+class MillcoUtils extends Process implements Module, ConfigurableModule {
+
+  public $mu_nonce;
+
+  public static function getModuleInfo() {
+    return [
+      'title' => 'MillcoUtils',
+      'summary' => 'Very simple config options we often use.',
+      'version' => 1,
+      'autoload' => true,
+      'singular' => true,
+      'permanent' => false,
+
+      'permission' => 'millco-utils',
+      'permissions' => array('millco-utils' => 'Manage Millco Utils'),
+
+      'icon' => 'cogs',
+        // page that you want created to execute this module
+        'page' => [
+          'name' => 'mu',
+		  'parent' => 'setup',
+          'title' => 'Utils',
+        ],
+
+      'requires' => [
+        'PHP>=8.0.0',
+        'ProcessWire>=3.0.0',
+      ],
+    ];
+  }
+
+  // Add config fields.
+  function getModuleConfigInputfields($data) {
+
+    $defaultData = array(
+      'mu_hat' => 'fedora'
+      );
+
+      $data = array_merge($defaultData, $data);
+
+     return $data;
+
+  }
+
+    /**
+   * 
+   */
+  public function __construct()
+  {
+
+    // populate defaults, which will get replaced with actual
+    // configured values before the init/ready methods are called
+    $this->set('hat', 'trilby');
+    parent::__construct(); // remember to call the parent
+
+
+  }
+
+  public function ___execute()
+  {
+
+	$admin_page_markup='';
+    $admin_page_markup .= '<p>At some point we\'ll have some options here ... at the moment we dont....<br> .... might end up with an options table ... or is that overkill... can we save this as module conig data (yes)?</p>';
+
+	$admin_page_markup .= '<p>In the meantime heres some sys info you probably have already in the footer.</p>';
+
+
+
+	$admin_page_markup .= '<div class="uk-text-muted">';
+	$admin_page_markup .= '<div>Processwire Version : ' .	wire('config')->versionName . '</div>';
+	$admin_page_markup .= '<div>PHP version : ' . phpversion('tidy') . '</div>';
+	 $admin_page_markup .= '</div>';
+
+   $admin_page_markup .='<p>And heres a placeholder form for when I get time to implement settings (eg CSP)</p>';
+
+   $form = $this->modules->get('InputfieldForm');
+
+     $field = $this->modules->get('InputfieldText');
+     $field->name = 'Name';
+     $field->columnWidth = 33;
+     $form->add($field);
+     
+     $button = $this->modules->get('InputfieldSubmit');
+     $button->value = 'Save';
+     $button->icon = 'floppy-o';
+     $form->add($button);
+
+
+   $admin_page_markup .= $form->render();
+
+   $admin_page_markup.=' hat is ' . $this->get('hat');
+	
+   
+    return $admin_page_markup;
+  }
+
+
+  public function ready() {
+
+    // set a nonce we can use in script tags.
+    $nonce = base64_encode(random_bytes(20));
+    $this->mu_nonce=$nonce;
+
+    $this->addHookProperty("Page::nonce", $this, "hook_nonce");
+    $this->addHookAfter('Page::render', $this, 'edit_buttons');
+
+  }
+  
+  public function hook_nonce($event){
+    $event->return = $this->mu_nonce;
+
+  }
+
+  public function edit_buttons($event) {
+
+    // modify the return value of Page::render() to include the following:
+
+    // add our edit toolbar markup. 
+    // Get the current page
+        $page = $event->object;
+
+      if(!($page->template=='admin')){
+
+
+		// Edit link to admin for howard.
+		// which is in fact really useful.
+		if (wire('user')->isLoggedin() && $page->editable()) {
+
+			// $edit_butt_markup='<div class="mu_edit_bar">';
+
+			// // TODO 
+			// // Add different options for super users.
+			// $edit_butt_markup.= "<a class='edit-link' href='$page->editUrl'>Edit</a>";
+
+			// $edit_butt_markup.='</div>';
+
+      $path = wire('config')->paths->siteModules . 'MillcoUtils/markup_edit_button.php';
+
+      // $path='/site/modules/MillcoUtils/markup_edit_button.php';
+
+      $edit_butt_markup=wire('files')->render($path);
+
+			$updated=str_replace('</body', $edit_butt_markup . '</body', $event->return);
+  
+			$event->return = $updated;
+	  
+
+		}
+
+
+
+
+      }
+
+    }
+}
