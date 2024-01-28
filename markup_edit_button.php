@@ -1,9 +1,40 @@
+<?php
+
+namespace ProcessWire;
+
+$moduleConfig = wire('modules')->get('MillcoUtils');
+$eb_position = '';
+
+if ($moduleConfig->top) {
+    $eb_position .= 'top: ' . $moduleConfig->top . ';';
+}
+if ($moduleConfig->right) {
+    $eb_position .= 'right: ' . $moduleConfig->right . ';';
+}
+if ($moduleConfig->bottom) {
+    $eb_position .= 'bottom: ' . $moduleConfig->bottom . ';';
+}
+if ($moduleConfig->left) {
+    $eb_position .= 'left: ' . $moduleConfig->left . ';';
+}
+
+if($eb_position==''){
+    $eb_position='top:4px;right:4px;';
+}
+
+
+?>
+
+
+
 <style nonce="<?= $page->nonce ?>">
     .mu_edit_bar {
         position: fixed;
-        top: 4px;
-        bottom: auto;
-        left: calc(50vw - 100px);
+        <?php
+
+        echo $eb_position;
+
+        ?>
         display: flex;
         gap: 0.75rem;
         border: 1px solid #ccc;
@@ -76,7 +107,11 @@
             </svg>
             [<?= $page->template->name ?>] </a>
 
+
+
+
     <?php
+
     } // close is super user conditional
     ?>
 

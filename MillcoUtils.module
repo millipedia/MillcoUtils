@@ -1,4 +1,6 @@
-<?php namespace ProcessWire;
+<?php
+
+namespace ProcessWire;
 
 /**
  * MillcoUtils
@@ -7,11 +9,13 @@
  */
 
 
-class MillcoUtils extends Process implements Module, ConfigurableModule {
+class MillcoUtils extends Process implements Module, ConfigurableModule
+{
 
   public $mu_nonce;
 
-  public static function getModuleInfo() {
+  public static function getModuleInfo()
+  {
     return [
       'title' => 'MillcoUtils',
       'summary' => 'Very simple config options we often use.',
@@ -24,12 +28,12 @@ class MillcoUtils extends Process implements Module, ConfigurableModule {
       'permissions' => array('millco-utils' => 'Manage Millco Utils'),
 
       'icon' => 'cogs',
-        // page that you want created to execute this module
-        'page' => [
-          'name' => 'mu',
-		  'parent' => 'setup',
-          'title' => 'Utils',
-        ],
+      // page that you want created to execute this module
+      'page' => [
+        'name' => 'mu',
+        'parent' => 'setup',
+        'title' => 'Utils',
+      ],
 
       'requires' => [
         'PHP>=8.0.0',
@@ -39,121 +43,175 @@ class MillcoUtils extends Process implements Module, ConfigurableModule {
   }
 
   // Add config fields.
-  function getModuleConfigInputfields(InputfieldWrapper $inputfields) {
-
+  function getModuleConfigInputfields(InputfieldWrapper $inputfields)
+  {
     // actually do I want to do these here we have them on the page?
     return $inputfields;
   }
 
-    /**
-   * 
-   */
+  static protected $defaults = array(
+    'top' => '',
+    'right' => '',
+    'bottom' => '',
+    'left' => ''
+  );
+
   public function __construct()
   {
-
     // populate defaults, which will get replaced with actual
     // configured values before the init/ready methods are called
-    $this->set('hat', 'trilby');
-    parent::__construct(); // remember to call the parent
-
-
+    $this->setArray(self::$defaults);
   }
 
   public function ___execute()
   {
 
-	$admin_page_markup='';
-    $admin_page_markup .= '<p>At some point we\'ll have some options here ... at the moment we dont....<br> .... might end up with an options table ... or is that overkill... can we save this as module conig data (yes)?</p>';
+    if ($this->input->post('submit')) {
 
-	$admin_page_markup .= '<p>In the meantime heres some sys info you probably have already in the footer.</p>';
+      $this->mu_save_settings($this->input->post);
+    }
 
-
-
-	$admin_page_markup .= '<div class="uk-panel">';
-	$admin_page_markup .= '<div>Processwire Version : ' .	wire('config')->versionName . '</div>';
-	$admin_page_markup .= '<div>PHP version : ' . phpversion('tidy') . '</div>';
-	 $admin_page_markup .= '</div>';
-
-   $admin_page_markup .='<p>And heres a placeholder form for when I get time to implement settings (eg CSP)- This does nothing as the moment.</p>';
-
-   $form = $this->modules->get('InputfieldForm');
-
-     $field = $this->modules->get('InputfieldText');
-     $field->name = 'Name';
-     $field->columnWidth = 33;
-     $form->add($field);
-     
-     $button = $this->modules->get('InputfieldSubmit');
-     $button->value = 'Save';
-     $button->icon = 'floppy-o';
-     $form->add($button);
+    $admin_page_markup = '';
 
 
-   $admin_page_markup .= $form->render();
+    $moduleConfig = $this->wire('modules')->get('MillcoUtils');
 
-   $admin_page_markup.=' hat is ' . $this->get('hat');
-	
-   
+    $admin_page_markup .= '<div class="uk-panel" style="margin:2rem 0; padding:2rem;background-color:#eee">';
+    $admin_page_markup .= '<div>Processwire Version : ' .  wire('config')->versionName . '</div>';
+    $admin_page_markup .= '<div>PHP version : ' . phpversion('tidy') . '</div>';
+    $admin_page_markup .= '</div>';
+
+    $form = $this->modules->get('InputfieldForm');
+    // $form->action = './Mu_save_settings';
+
+    $fieldset = $this->modules->get('InputfieldFieldset');
+    $fieldset->label = 'Edit Bar';
+    $fieldset->description = 'Set the intial position of the edit toolbar.';
+    $fieldset->notes = 'Thes should be CSS position values. eg. 4px for top and 0px for right will pin the bar to the right hand side of the screen.';
+    $fieldset->collapsed = Inputfield::collapsedYes;
+    
+    $form->add($fieldset);
+
+    $field = $this->modules->get('InputfieldText');
+    $field->name = 'top';
+    $field->value = $moduleConfig->top;
+    $field->columnWidth = 25;
+    $fieldset->add($field);
+
+    $field = $this->modules->get('InputfieldText');
+    $field->name = 'right';
+    $field->value = $moduleConfig->right;
+    $field->columnWidth = 25;
+    $fieldset->add($field);
+
+    $field = $this->modules->get('InputfieldText');
+    $field->name = 'bottom';
+    $field->value = $moduleConfig->bottom;
+    $field->columnWidth = 25;
+    $fieldset->add($field);
+
+    $field = $this->modules->get('InputfieldText');
+    $field->name = 'left';
+    $field->value = $moduleConfig->left;
+    $field->columnWidth = 25;
+    $fieldset->add($field);
+
+    $button = $this->modules->get('InputfieldSubmit');
+    $button->value = 'Save';
+    $button->icon = 'floppy-o';
+    $form->add($button);
+
+
+    $admin_page_markup .= $form->render();
+
+
+
     return $admin_page_markup;
   }
 
 
-  public function ready() {
+  public function ready()
+  {
 
     // set a nonce we can use in script tags.
     $nonce = base64_encode(random_bytes(20));
-    $this->mu_nonce=$nonce;
+    $this->mu_nonce = $nonce;
 
     $this->addHookProperty("Page::nonce", $this, "hook_nonce");
     $this->addHookAfter('Page::render', $this, 'edit_buttons');
-
   }
-  
-  public function hook_nonce($event){
+
+  /**
+   * Update our module config settings with the submitted
+   * values.
+   * @param Object $post_data
+   */
+  public function mu_save_settings($post_data)
+  {
+
+    // Get the current config data
+    $mu_config_data = $this->modules->getConfig('MillcoUtils');
+
+    // TODO sanitize all these better.
+    $top = $post_data->top;
+    $mu_config_data['top'] = $top;
+
+    $right = $post_data->right;
+    $mu_config_data['right'] = $right;
+
+    $bottom = $post_data->bottom;
+    $mu_config_data['bottom'] = $bottom;
+
+    $left = $post_data->left;
+    $mu_config_data['left'] = $left;
+
+    $this->message('Settings saved');// TODO check we have actually updated something.
+
+    $this->modules->saveConfig('MillcoUtils', $mu_config_data);
+
+    // reload our utils page
+    $this->session->redirect('./');
+  }
+
+  public function hook_nonce($event)
+  {
     $event->return = $this->mu_nonce;
-
   }
 
-  public function edit_buttons($event) {
+  public function edit_buttons($event)
+  {
 
     // modify the return value of Page::render() to include the following:
 
     // add our edit toolbar markup. 
     // Get the current page
-        $page = $event->object;
+    $page = $event->object;
 
-      if(!($page->template=='admin')){
-
-
-		// Edit link to admin for howard.
-		// which is in fact really useful.
-		if (wire('user')->isLoggedin() && $page->editable()) {
-
-			// $edit_butt_markup='<div class="mu_edit_bar">';
-
-			// // TODO 
-			// // Add different options for super users.
-			// $edit_butt_markup.= "<a class='edit-link' href='$page->editUrl'>Edit</a>";
-
-			// $edit_butt_markup.='</div>';
-
-      $path = wire('config')->paths->siteModules . 'MillcoUtils/markup_edit_button.php';
-
-      // $path='/site/modules/MillcoUtils/markup_edit_button.php';
-
-      $edit_butt_markup=wire('files')->render($path);
-
-			$updated=str_replace('</body', $edit_butt_markup . '</body', $event->return);
-  
-			$event->return = $updated;
-	  
-
-		}
+    if (!($page->template == 'admin')) {
 
 
+      // Edit link to admin for howard.
+      // which is in fact really useful.
+      if (wire('user')->isLoggedin() && $page->editable()) {
 
+        // $edit_butt_markup='<div class="mu_edit_bar">';
 
+        // // TODO 
+        // // Add different options for super users.
+        // $edit_butt_markup.= "<a class='edit-link' href='$page->editUrl'>Edit</a>";
+
+        // $edit_butt_markup.='</div>';
+
+        $path = wire('config')->paths->siteModules . 'MillcoUtils/markup_edit_button.php';
+
+        // $path='/site/modules/MillcoUtils/markup_edit_button.php';
+
+        $edit_butt_markup = wire('files')->render($path);
+
+        $updated = str_replace('</body', $edit_butt_markup . '</body', $event->return);
+
+        $event->return = $updated;
       }
-
     }
+  }
 }
