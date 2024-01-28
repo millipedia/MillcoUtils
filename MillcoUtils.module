@@ -37,7 +37,7 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 
       'requires' => [
         'PHP>=8.0.0',
-        'ProcessWire>=3.0.0',
+        'ProcessWire>=3.0.16',
       ],
     ];
   }
