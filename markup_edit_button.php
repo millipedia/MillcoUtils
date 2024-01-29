@@ -1,5 +1,12 @@
 <?php
 
+/**
+ * 
+ * This writes out the html for the edit bar
+ * along with styles and some js to make it draggable.
+ * 
+ */
+
 namespace ProcessWire;
 
 $moduleConfig = wire('modules')->get('MillcoUtils');
@@ -22,19 +29,11 @@ if($eb_position==''){
     $eb_position='top:4px;right:4px;';
 }
 
-
 ?>
-
-
 
 <style nonce="<?= $page->nonce ?>">
     .mu_edit_bar {
         position: fixed;
-        <?php
-
-        echo $eb_position;
-
-        ?>
         display: flex;
         gap: 0.75rem;
         border: 1px solid #ccc;
@@ -72,7 +71,7 @@ if($eb_position==''){
 </style>
 
 
-<div id="mu_edit_bar" class="mu_edit_bar">
+<div id="mu_edit_bar" class="mu_edit_bar" style="<?=$eb_position?>">
 
 
     <a href="<?= $page->editURL ?>">
@@ -97,7 +96,6 @@ if($eb_position==''){
     <?php
 
     // only superusers get to see templates
-
     if ($user->isSuperuser()) {
     ?>
 
@@ -156,6 +154,11 @@ if($eb_position==''){
             // set the element's new position:
             elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
             elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+            // because we're just using top and left to position the bar
+            // we need to clear right and bottom values which might have been set
+            // by the user.
+            elmnt.style.right = '';
+            elmnt.style.bottom = '';
         }
 
         function closeDragElement() {
