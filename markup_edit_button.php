@@ -38,7 +38,6 @@ if($eb_position==''){
         gap: 0.75rem;
         border: 1px solid #ccc;
         border-radius: 4px;
-        ;
         background-color: #222;
         padding: 4px 8px;
         color: white;
@@ -52,6 +51,7 @@ if($eb_position==''){
         flex-direction: column;
         text-decoration: none;
         font-size: 11px;
+        line-height: 1.1;
         align-items: center;
         justify-content: center;
         max-width: fit-content;
