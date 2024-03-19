@@ -20,7 +20,7 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
       'title' => 'MillcoUtils',
       'summary' => 'Very simple config options we often use.',
       'version' => 1,
-      'autoload' => true,
+      'autoload' => false,
       'singular' => true,
       'permanent' => false,
 
@@ -67,12 +67,10 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
   {
 
     if ($this->input->post('submit')) {
-
       $this->mu_save_settings($this->input->post);
     }
 
     $admin_page_markup = '';
-
 
     $moduleConfig = $this->wire('modules')->get('MillcoUtils');
 
@@ -183,14 +181,22 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
     $event->return = $this->mu_nonce;
   }
 
+  /**
+   * modify the return value of Page::render() to add our edit toolbar markup. 
+   * 
+   */
+
   public function edit_buttons($event)
   {
 
-    // modify the return value of Page::render() to include the following:
+    // Bail out early if we don't have permission to do this.
+    if(!(wire('user')->hasPermission('millco-utils'))) {
+      return;
+    }
 
-    // add our edit toolbar markup. 
     // Get the current page
     $page = $event->object;
+
 
     if (!($page->template == 'admin')) {
 
