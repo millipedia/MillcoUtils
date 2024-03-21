@@ -68,6 +68,12 @@ if($eb_position==''){
         max-width: 20px;
         height: auto;
     }
+
+    @media print{
+        .mu_edit_bar{
+            display: none !important;
+        }
+    }
 </style>
 
 
