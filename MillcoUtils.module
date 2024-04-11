@@ -291,7 +291,7 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 		$added = [];
 		foreach ($extensions as $ext) {
 			$endpoints = $this->wire->files->find(
-				$this->wire->config->paths->templates . "ajax",
+				$this->wire->config->paths->templates . "api",
 				['extensions' => [$ext]]
 			);
 			foreach ($endpoints as $endpoint) {
