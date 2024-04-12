@@ -87,7 +87,7 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 
 	public function init()
 	{
-
+		/** @var Wire $this */
 		// set a nonce we can use in script tags.
 		$nonce = base64_encode(random_bytes(20));
 		$this->mu_nonce = $nonce;
@@ -110,22 +110,27 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 			return 'You require additional permissions to edit these settings.';
 		}
 
-
 		if ($this->input->post('submit')) {
 			$this->mu_save_settings($this->input->post);
 		}
 
 		$admin_page_markup = '';
 
+		/** @var  MillcoUtils $moduleConfig */
+		// $moduleConfig = $this->modules->getModuleConfigData('MillcoUtils');
 		$moduleConfig = $this->wire('modules')->get('MillcoUtils');
 
 		$admin_page_markup .= '<div class="uk-panel" style="margin:2rem 0; padding:2rem;background-color:#eee">';
 		$admin_page_markup .= '<div><strong>Processwire Version : </strong>' .  wire('config')->versionName . '</div>';
 		$admin_page_markup .= '<div><strong>PHP version : </strong>' . phpversion('tidy') . '</div>';
-
 		if ($_SERVER['REMOTE_ADDR']) {
 			$admin_page_markup .= '<div><strong>Server IP address : </strong>' . $_SERVER['REMOTE_ADDR'] . '</div>';
 		}
+
+		$panel_info = wire('files')->render(wire('config')->paths->siteModules . 'MillcoUtils/panel_info.php');
+		$admin_page_markup .=$panel_info;
+
+
 
 		$admin_page_markup .= '</div>';
 
@@ -213,6 +218,7 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 		$this->modules->saveConfig('MillcoUtils', $mu_config_data);
 
 		// reload our utils page
+		/** @var Wire $this */
 		$this->session->redirect('./');
 	}
 
@@ -291,7 +297,7 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 		$added = [];
 		foreach ($extensions as $ext) {
 			$endpoints = $this->wire->files->find(
-				$this->wire->config->paths->templates . "ajax",
+				$this->wire->config->paths->templates . "api",
 				['extensions' => [$ext]]
 			);
 			foreach ($endpoints as $endpoint) {
@@ -377,6 +383,7 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 			$response = $this->ajaxFormatted($raw, $endpoint);
 			return $response;
 		} catch (\Throwable $th) {
+			/** @var Wire $this */
 			$this->log($th->getMessage());
 			return "Error in AJAX endpoint - error has been logged";
 		}
@@ -384,6 +391,7 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 
 	private function ajaxResponse($endpoint)
 	{
+		/** @var Wire $this */
 		if ($this->wire->user->isSuperuser()) {
 			return $this->wire->files->render($endpoint);
 		}
