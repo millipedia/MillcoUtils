@@ -87,7 +87,7 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 
 	public function init()
 	{
-
+		/** @var Wire $this */
 		// set a nonce we can use in script tags.
 		$nonce = base64_encode(random_bytes(20));
 		$this->mu_nonce = $nonce;
@@ -110,14 +110,13 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 			return 'You require additional permissions to edit these settings.';
 		}
 
-
 		if ($this->input->post('submit')) {
 			$this->mu_save_settings($this->input->post);
 		}
 
 		$admin_page_markup = '';
 
-		$moduleConfig = $this->wire('modules')->get('MillcoUtils');
+		$moduleConfig = $this->modules->getModuleConfigData('MillcoUtils');
 
 		$admin_page_markup .= '<div class="uk-panel" style="margin:2rem 0; padding:2rem;background-color:#eee">';
 		$admin_page_markup .= '<div><strong>Processwire Version : </strong>' .  wire('config')->versionName . '</div>';
@@ -213,6 +212,7 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 		$this->modules->saveConfig('MillcoUtils', $mu_config_data);
 
 		// reload our utils page
+		/** @var Wire $this */
 		$this->session->redirect('./');
 	}
 
@@ -377,6 +377,7 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 			$response = $this->ajaxFormatted($raw, $endpoint);
 			return $response;
 		} catch (\Throwable $th) {
+			/** @var Wire $this */
 			$this->log($th->getMessage());
 			return "Error in AJAX endpoint - error has been logged";
 		}
@@ -384,6 +385,7 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 
 	private function ajaxResponse($endpoint)
 	{
+		/** @var Wire $this */
 		if ($this->wire->user->isSuperuser()) {
 			return $this->wire->files->render($endpoint);
 		}
