@@ -147,25 +147,25 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 
 		$field = $this->modules->get('InputfieldText');
 		$field->name = 'top';
-		$field->value = $moduleConfig->top;
+		$field->value = $moduleConfig['top'];
 		$field->columnWidth = 25;
 		$fieldset->add($field);
 
 		$field = $this->modules->get('InputfieldText');
 		$field->name = 'right';
-		$field->value = $moduleConfig->right;
+		$field->value = $moduleConfig['right'];
 		$field->columnWidth = 25;
 		$fieldset->add($field);
 
 		$field = $this->modules->get('InputfieldText');
 		$field->name = 'bottom';
-		$field->value = $moduleConfig->bottom;
+		$field->value = $moduleConfig['bottom'];
 		$field->columnWidth = 25;
 		$fieldset->add($field);
 
 		$field = $this->modules->get('InputfieldText');
 		$field->name = 'left';
-		$field->value = $moduleConfig->left;
+		$field->value = $moduleConfig['left'];
 		$field->columnWidth = 25;
 		$fieldset->add($field);
 
