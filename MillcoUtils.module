@@ -2,6 +2,8 @@
 
 namespace ProcessWire;
 
+use function PHPSTORM_META\map;
+
 /**
  * MillcoUtils
  * 
@@ -12,7 +14,8 @@ namespace ProcessWire;
 class MillcoUtils extends Process implements Module, ConfigurableModule
 {
 
-	public $mu_nonce;
+	public $mu_nonce;// a page nonce we set for use in inline scripts etc
+	public $mu_settings; // some sitewide settings.
 
 	const ajax_noaccess = "ajax-noaccess";
 	const ajax_rendererror = "ajax-render-error";
@@ -70,7 +73,11 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 		'top' => '',
 		'right' => '',
 		'bottom' => '',
-		'left' => ''
+		'left' => '',
+		'twitter' => '',
+		'youtube' => '',
+		'facebook' => '',
+		'instagram' => ''
 	);
 
 	public function __construct()
@@ -88,11 +95,19 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 	public function init()
 	{
 		/** @var Wire $this */
+
+		// make this module available in template files using $mu
+		// eg $mu->twitter;
+		$this->wire('mu', $this);
+
 		// set a nonce we can use in script tags.
 		$nonce = base64_encode(random_bytes(20));
 		$this->mu_nonce = $nonce;
 
+		// and add a hook to get the nonce easily.
 		$this->addHookProperty("Page::nonce", $this, "hook_nonce");
+
+		// add our page edit buttons.
 		$this->addHookAfter('Page::render', $this, 'edit_buttons');
 
 		// Add Bernhard's ajax hooks.
@@ -101,7 +116,6 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 
 	public function ___execute()
 	{
-
 		// We don't show the manage settings unless you have
 		// the millco-utils-manage permissions.
 		// TODO - we don't want to show this page at all if you don't have permissions....
@@ -143,35 +157,70 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 		$fieldset->notes = 'Thes should be CSS position values. eg. 4px for top and 0px for right will pin the bar to the right hand side of the screen.';
 		$fieldset->collapsed = Inputfield::collapsedYes;
 
-		$form->add($fieldset);
-
 		$field = $this->modules->get('InputfieldText');
 		$field->name = 'top';
-		$field->value = $moduleConfig->top;
+		$field->value = $moduleConfig['top'];
 		$field->columnWidth = 25;
 		$fieldset->add($field);
 
 		$field = $this->modules->get('InputfieldText');
 		$field->name = 'right';
-		$field->value = $moduleConfig->right;
+		$field->value = $moduleConfig['right'];
 		$field->columnWidth = 25;
 		$fieldset->add($field);
 
 		$field = $this->modules->get('InputfieldText');
 		$field->name = 'bottom';
-		$field->value = $moduleConfig->bottom;
+		$field->value = $moduleConfig['bottom'];
 		$field->columnWidth = 25;
 		$fieldset->add($field);
 
 		$field = $this->modules->get('InputfieldText');
 		$field->name = 'left';
-		$field->value = $moduleConfig->left;
+		$field->value = $moduleConfig['left'];
 		$field->columnWidth = 25;
 		$fieldset->add($field);
+
+		$form->add($fieldset);
+
+		/** @var InputfieldFieldset $fieldset */
+		$fieldset = $this->modules->get('InputfieldFieldset');
+		$fieldset->label = 'Social media';
+		$fieldset->description = 'Enter your social media user names.';
+		$fieldset->notes = '';
+		$fieldset->collapsed = Inputfield::collapsedYes;
+
+
+		$field = $this->modules->get('InputfieldText');
+		$field->name = 'twitter';
+		$field->value = $moduleConfig['twitter'];
+		$field->columnWidth = 25;
+		$fieldset->add($field);
+
+		$field = $this->modules->get('InputfieldText');
+		$field->name = 'youtube';
+		$field->value = $moduleConfig['youtube'];
+		$field->columnWidth = 25;
+		$fieldset->add($field);
+
+		$field = $this->modules->get('InputfieldText');
+		$field->name = 'facebook';
+		$field->value = $moduleConfig['facebook'];
+		$field->columnWidth = 25;
+		$fieldset->add($field);
+
+		$field = $this->modules->get('InputfieldText');
+		$field->name = 'instagram';
+		$field->value = $moduleConfig['instagram'];
+		$field->columnWidth = 25;
+		$fieldset->add($field);
+
+		$form->add($fieldset);
 
 		$button = $this->modules->get('InputfieldSubmit');
 		$button->value = 'Save';
 		$button->icon = 'floppy-o';
+
 		$form->add($button);
 
 
@@ -195,7 +244,7 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 	public function mu_save_settings($post_data)
 	{
 
-		// Get the current config data
+		// Get the current config data as an array
 		$mu_config_data = $this->modules->getConfig('MillcoUtils');
 
 		// TODO sanitize all these better.
@@ -210,6 +259,18 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 
 		$left = $post_data->left;
 		$mu_config_data['left'] = $left;
+
+		$twitter = $post_data->twitter;
+		$mu_config_data['twitter'] = $twitter;
+
+		$facebook = $post_data->facebook;
+		$mu_config_data['facebook'] = $facebook;
+
+		$youtube = $post_data->youtube;
+		$mu_config_data['youtube'] = $youtube;
+
+		$instagram = $post_data->instagram;
+		$mu_config_data['instagram'] = $instagram;
 
 		$this->message('Settings saved'); // TODO check we have actually updated something.
 
@@ -400,4 +461,5 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 			return self::ajax_rendererror;
 		}
 	}
+
 }
