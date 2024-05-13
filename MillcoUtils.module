@@ -122,9 +122,7 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 
 		$admin_page_markup = '';
 
-		/** @var  MillcoUtils $moduleConfig */
-		// $moduleConfig = $this->modules->getModuleConfigData('MillcoUtils');
-		$moduleConfig = $this->wire('modules')->get('MillcoUtils');
+		$moduleConfig = $this->modules->getModuleConfigData('MillcoUtils');
 
 		$admin_page_markup .= '<div class="uk-panel" style="margin:2rem 0; padding:2rem;background-color:#eee">';
 		$admin_page_markup .= '<div><strong>Processwire Version : </strong>' .  wire('config')->versionName . '</div>';
@@ -154,25 +152,25 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 
 		$field = $this->modules->get('InputfieldText');
 		$field->name = 'top';
-		$field->value = $moduleConfig->top;
+		$field->value = $moduleConfig['top'];
 		$field->columnWidth = 25;
 		$fieldset->add($field);
 
 		$field = $this->modules->get('InputfieldText');
 		$field->name = 'right';
-		$field->value = $moduleConfig->right;
+		$field->value = $moduleConfig['right'];
 		$field->columnWidth = 25;
 		$fieldset->add($field);
 
 		$field = $this->modules->get('InputfieldText');
 		$field->name = 'bottom';
-		$field->value = $moduleConfig->bottom;
+		$field->value = $moduleConfig['bottom'];
 		$field->columnWidth = 25;
 		$fieldset->add($field);
 
 		$field = $this->modules->get('InputfieldText');
 		$field->name = 'left';
-		$field->value = $moduleConfig->left;
+		$field->value = $moduleConfig['left'];
 		$field->columnWidth = 25;
 		$fieldset->add($field);
 
