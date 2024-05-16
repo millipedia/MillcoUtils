@@ -33,6 +33,7 @@ namespace ProcessWire;
 
 $moduleConfig = wire('modules')->get('MillcoUtils');
 $eb_position = '';
+$eb_classes='';
 
 if ($moduleConfig->top) {
     $eb_position .= 'top: ' . $moduleConfig->top . ';';
@@ -49,6 +50,10 @@ if ($moduleConfig->left) {
 
 if($eb_position==''){
     $eb_position='top:4px;right:4px;';
+}
+
+if ($moduleConfig->eb_vertical) {
+    $eb_classes .= ' mu_eb_vertical';
 }
 
 ?>
@@ -81,6 +86,15 @@ if($eb_position==''){
         color: white;
     }
 
+	.mu_eb_vertical{
+		flex-direction: column;
+	}
+	.mu_eb_vertical a {
+		flex-direction: row;
+		gap:0.25rem;
+		font-size: 12px;
+	}
+
     .mu_edit_bar a:hover {
         color: var(--accent, #D6363A);
     }
@@ -99,12 +113,12 @@ if($eb_position==''){
 </style>
 
 
-<div id="mu_edit_bar" class="mu_edit_bar" style="<?=$eb_position?>">
+<div id="mu_edit_bar" class="mu_edit_bar <?=$eb_classes?>" style="<?=$eb_position?>">
 
 <?php
 
-	echo '<a href="' . $page->editURL . '">' . mu_editbar_icon('edit') . 'Edit</a>';
-	echo '<a href="' . $urls->admin . '">' . mu_editbar_icon('pages') . 'Pages</a>';
+	echo '<a href="' . $page->editURL . '" class="no_external_link">' . mu_editbar_icon('edit') . 'Edit</a>';
+	echo '<a href="' . $urls->admin . '" class="no_external_link">' . mu_editbar_icon('pages') . 'Pages</a>';
 
 	// additional buttons
 	if($moduleConfig->extra_buttons){
@@ -139,7 +153,7 @@ if($eb_position==''){
 					if($show_button){
 
 
-						echo '<a href="' . $eb_array[0] .'">';
+						echo '<a href="' . $eb_array[0] .'" class="no_external_link">';
 					
 						// pull in an icon from our icons collection.
 						$iconname=trim($eb_array[2]);

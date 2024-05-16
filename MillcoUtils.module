@@ -74,6 +74,7 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 		'right' => '',
 		'bottom' => '',
 		'left' => '',
+		'eb_vertical' => '0',
 		'twitter' => '',
 		'youtube' => '',
 		'facebook' => '',
@@ -204,7 +205,18 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 		$fieldset->notes = 'Current availabele icons: ' . $icons_list . ' - You can add new svg icons to the MillcoUtils/icons folder.';
 
 		$field->value = $moduleConfig['extra_buttons'];
-		$field->columnWidth = 100;
+		$field->columnWidth = 75;
+		$fieldset->add($field);
+
+		$field = $this->modules->get('InputfieldCheckbox');
+		$field->name = 'eb_vertical';
+		$field->label = 'Vertical edit bar';
+		$field->value = 1;
+		if($moduleConfig['eb_vertical']){
+			$field->checked(true);
+		}
+		//$field->autocheck=1;
+		$field->columnWidth = 25;
 		$fieldset->add($field);
 
 		$form->add($fieldset);
@@ -288,6 +300,11 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 		$extra_buttons = $post_data->extra_buttons;
 		$mu_config_data['extra_buttons'] = $extra_buttons;
 
+		$eb_vertical = $post_data->eb_vertical;
+
+		bd($post_data);
+
+		$mu_config_data['eb_vertical'] = $eb_vertical;
 
 		$twitter = $post_data->twitter;
 		$mu_config_data['twitter'] = $twitter;
