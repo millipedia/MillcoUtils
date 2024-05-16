@@ -119,7 +119,7 @@ if ($moduleConfig->eb_vertical) {
 <?php
 
 	echo '<a href="' . $page->editURL . '" class="no_external_link">' . mu_editbar_icon('edit') . 'Edit</a>';
-	echo '<a href="' . $urls->admin . '" class="no_external_link">' . mu_editbar_icon('pages') . 'Pages</a>';
+	echo '<a href="' . $urls->admin . 'page" class="no_external_link">' . mu_editbar_icon('pages') . 'Pages</a>';
 
 	// additional buttons
 	if($moduleConfig->extra_buttons){
@@ -159,7 +159,7 @@ if ($moduleConfig->eb_vertical) {
 						// pull in an icon from our icons collection.
 						$iconname=trim($eb_array[2]);
 						echo mu_editbar_icon($iconname);
-						echo $eb_array[1];
+						echo '<span class="mu_eb_label">' . $eb_array[1] .'</span>';
 						echo '</a>';
 					}
 
