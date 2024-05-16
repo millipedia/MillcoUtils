@@ -8,13 +8,19 @@ I was spurred into action to put these things into a module by Bernhard's [RockF
 
 # Things it does so far.
 
-1. Adds a nonce property to your page which you can add to your CSP and then inline script / styles.
+## Nonce
+
+Adds a nonce property to your page which you can add to your CSP and then inline script / styles.
 
     $page->nonce
 
-2. Adds an edit link and link to the page tree to front end pages for logged in users. Superusers also get a link to edit the template. This behaves in a simlar fashion to Bernhard's RockFrontend edit bar. You can set the inital position of the toolbar in admin now (it can be dragged when editing a page as well.)
+## Edit bar
 
-3. Adds hooks for any php files you add to templates/ajax. This is pretty much a wholesale [copy of a RockFrontend feature](https://www.baumrock.com/en/processwire/modules/rockfrontend/docs/ajax/) and in fact I may well take it back out and rely on RF rather than duplicating it.
+Adds an edit link and link to the page tree to front end pages for logged in users. Superusers also get a link to edit the template. This behaves in a simlar fashion to Bernhard's RockFrontend edit bar. You can set the inital position of the toolbar in admin now (it can be dragged when editing a page as well.)
+
+You can also add buttons by adding a link, label and icon to the relevant config field. 
+At the moment I've got a limited number of icons included but you can add more or I probably will when I'm adding them. The ones I'm using at the mo are the IBM Carbon icons [grabbed from here](https://icon-sets.iconify.design/carbon/)   
+
 
 # Things it doesn't yet but will soon.
 
