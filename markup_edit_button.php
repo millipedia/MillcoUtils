@@ -93,6 +93,7 @@ if ($moduleConfig->eb_vertical) {
 		flex-direction: row;
 		gap:0.25rem;
 		font-size: 12px;
+		white-space: nowrap;
 	}
 
     .mu_edit_bar a:hover {
