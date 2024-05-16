@@ -185,7 +185,7 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 		$field = $this->modules->get('InputfieldTextArea');
 		$field->label = 'Additional buttons';
 		$field->name = 'extra_buttons';
-		$field->description = 'Enter additional links to add to the bar. These should be in the format url,label,fa-icon eg /admin/setup/mu/,Utils,fa-cogs';
+		$field->description = 'Enter additional links to add to the bar. These should be in the format url,label,icon and then an optional role eg /admin/setup/mu/,Utils,settings,editor';
 		
 		// Get list of available icons from our
 		// MillcoUtils/icons directory
@@ -202,7 +202,6 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 		$icons_list=implode(', ',$icons_array);
 
 		$fieldset->notes = 'Current availabele icons: ' . $icons_list . ' - You can add new svg icons to the MillcoUtils/icons folder.';
-
 
 		$field->value = $moduleConfig['extra_buttons'];
 		$field->columnWidth = 100;

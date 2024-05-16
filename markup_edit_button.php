@@ -119,12 +119,35 @@ if($eb_position==''){
 				
 				if(is_array($eb_array)){
 
-					echo '<a href="' . $eb_array[0] .'">';
+					// if we have a 4th item then check to see if the current
+					// user has that role.
+					if(isset($eb_array[3]) && $eb_array[3]!=''){
+
+						$role=$sanitizer->pageName($eb_array[3]);
+						
+						if($user->hasRole($role)){
+							$show_button=1;
+						}else{
+							$show_button=0;
+						}
+
+					}else{
+
+						$show_button=1;
+					}
+
+					if($show_button){
+
+
+						echo '<a href="' . $eb_array[0] .'">';
 					
-					// pull in an icon from our icons collection.
-					echo mu_editbar_icon($eb_array[2]);
-					echo $eb_array[1];
-					echo '</a>';
+						// pull in an icon from our icons collection.
+						$iconname=trim($eb_array[2]);
+						echo mu_editbar_icon($iconname);
+						echo $eb_array[1];
+						echo '</a>';
+					}
+
 
 				}
 			}
