@@ -35,7 +35,7 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 				'millco-utils' => 'Millco Utils',
 				'millco-utils-manage' => 'Manage Millco Utils',
 				'millco-utils-editbutton' => 'Show edit button'
-			),9
+			),
 
 			'icon' => 'cogs',
 			// page that you want created to execute this module
