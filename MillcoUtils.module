@@ -14,7 +14,7 @@ use function PHPSTORM_META\map;
 class MillcoUtils extends Process implements Module, ConfigurableModule
 {
 
-	public $mu_nonce;// a page nonce we set for use in inline scripts etc
+	public $nonce;// a page nonce we set for use in inline scripts etc
 	public $mu_settings; // some sitewide settings.
 
 	const ajax_noaccess = "ajax-noaccess";
@@ -35,7 +35,7 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 				'millco-utils' => 'Millco Utils',
 				'millco-utils-manage' => 'Manage Millco Utils',
 				'millco-utils-editbutton' => 'Show edit button'
-			),
+			),9
 
 			'icon' => 'cogs',
 			// page that you want created to execute this module
@@ -104,7 +104,7 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 
 		// set a nonce we can use in script tags.
 		$nonce = base64_encode(random_bytes(20));
-		$this->mu_nonce = $nonce;
+		$this->nonce = $nonce;
 
 		// and add a hook to get the nonce easily.
 		$this->addHookProperty("Page::nonce", $this, "hook_nonce");
@@ -329,7 +329,7 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 
 	public function hook_nonce($event)
 	{
-		$event->return = $this->mu_nonce;
+		$event->return = $this->nonce;
 	}
 
 	/**
