@@ -14,7 +14,7 @@ use function PHPSTORM_META\map;
 class MillcoUtils extends Process implements Module, ConfigurableModule
 {
 
-	public $nonce;// a page nonce we set for use in inline scripts etc
+	public $nonce='';// a page nonce we set for use in inline scripts etc
 	public $mu_settings; // some sitewide settings.
 
 	const ajax_noaccess = "ajax-noaccess";
@@ -90,13 +90,12 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 	}
 
 
-
 	// 	init() method: This is called during the initialization after all modules have been loaded but before ProcessWire has fully bootstrapped and started delivering content.
 	//  It’s the right place to add hooks or events that occur before page rendering starts.
 
 	public function init()
 	{
-		/** @var Wire $this */
+		/** @var MillcoUtils $this */
 
 		// make this module available in template files using $mu
 		// eg $mu->twitter;
@@ -135,16 +134,14 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 		$moduleConfig = $this->modules->getModuleConfigData('MillcoUtils');
 
 		$admin_page_markup .= '<div class="uk-panel" style="margin:2rem 0; padding:2rem;background-color:#eee">';
-		$admin_page_markup .= '<div><strong>Processwire Version : </strong>' .  wire('config')->versionName . '</div>';
-		$admin_page_markup .= '<div><strong>PHP version : </strong>' . phpversion('tidy') . '</div>';
-		if ($_SERVER['REMOTE_ADDR']) {
-			$admin_page_markup .= '<div><strong>Server IP address : </strong>' . $_SERVER['REMOTE_ADDR'] . '</div>';
-		}
 
-		$panel_info = wire('files')->render(wire('config')->paths->siteModules . 'MillcoUtils/panel_info.php');
-		$admin_page_markup .=$panel_info;
-
-
+			$admin_page_markup .= '<div><strong>Processwire Version : </strong>' .  wire('config')->versionName . '</div>';
+			$admin_page_markup .= '<div><strong>PHP version : </strong>' . phpversion('tidy') . '</div>';
+			if ($_SERVER['REMOTE_ADDR']) {
+				$admin_page_markup .= '<div><strong>Server IP address : </strong>' . $_SERVER['REMOTE_ADDR'] . '</div>';
+			}			
+			$panel_info = wire('files')->render(wire('config')->paths->siteModules . 'MillcoUtils/panel_info.php');
+			$admin_page_markup .=$panel_info;
 
 		$admin_page_markup .= '</div>';
 
@@ -198,11 +195,11 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 			}
 		}
 		
-		sort($icons_array);//I always think DirectoryIterator should be able to do this.
+		sort($icons_array); // I always think DirectoryIterator should be able to do this.
 
 		$icons_list=implode(', ',$icons_array);
 
-		$fieldset->notes = 'Current availabele icons: ' . $icons_list . ' - You can add new svg icons to the MillcoUtils/icons folder.';
+		$fieldset->notes = 'Current availabele icons: ' . $icons_list . ' - You can add new editbar svg icons to the MillcoUtils/icons folder.';
 
 		$field->value = $moduleConfig['extra_buttons'];
 		$field->columnWidth = 75;
@@ -350,7 +347,6 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 
 		// Get the current page
 		$page = $event->object;
-
 
 		if (!($page->template == 'admin')) {
 

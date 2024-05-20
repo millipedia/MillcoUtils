@@ -113,7 +113,6 @@ if ($moduleConfig->eb_vertical) {
 	}
 </style>
 
-
 <div id="mu_edit_bar" class="mu_edit_bar <?= $eb_classes ?>" style="<?= $eb_position ?>">
 
 	<?php
@@ -125,6 +124,9 @@ if ($moduleConfig->eb_vertical) {
 	if ($moduleConfig->extra_buttons) {
 
 		$ebs = explode(PHP_EOL, $moduleConfig->extra_buttons);
+
+		// additional buttons are just a comma separated string in the 
+		// format url,label,icon,role
 
 		if (is_array($ebs)) {
 
@@ -151,7 +153,6 @@ if ($moduleConfig->eb_vertical) {
 					}
 
 					if ($show_button) {
-
 
 						echo '<a href="' . $eb_array[0] . '" class="no_external_link">';
 
