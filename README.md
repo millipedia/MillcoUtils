@@ -21,6 +21,14 @@ Adds an edit link and link to the page tree to front end pages for logged in use
 You can also add buttons by adding a link, label and icon to the relevant config field. 
 At the moment I've got a limited number of icons included but you can add more or I probably will when I'm adding them. The ones I'm using at the mo are the IBM Carbon icons [grabbed from here](https://icon-sets.iconify.design/carbon/)   
 
+## Inline icons
+
+	$mu->file_icon('whatever');
+
+will inline an svg file with the name whatever.svg if it exists in the site/assets/images/icons folder. 
+We normally use 'currentColor' in SVGs loading this way.
+
+
 
 # Things it doesn't yet but will soon.
 
