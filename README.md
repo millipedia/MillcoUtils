@@ -14,6 +14,10 @@ Adds a nonce property to your page which you can add to your CSP and then inline
 
     $page->nonce
 
+	or
+
+	$mu->nonce
+
 ## Edit bar
 
 Adds an edit link and link to the page tree to front end pages for logged in users. Superusers also get a link to edit the template. This behaves in a simlar fashion to Bernhard's RockFrontend edit bar. You can set the inital position of the toolbar in admin now (it can be dragged when editing a page as well.)
