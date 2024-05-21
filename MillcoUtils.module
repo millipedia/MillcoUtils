@@ -191,7 +191,10 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 		$icons_directory = wire('config')->paths->siteModules . 'MillcoUtils/icons/';
 		foreach (new \DirectoryIterator($icons_directory) as $file) {
 			if ($file->isFile()) {
-				$icons_array[] = $file->getBasename('.svg');
+
+				if($file->getExtension() == 'svg'){
+					$icons_array[] = $file->getBasename('.svg');
+				}
 			}
 		}
 
@@ -257,7 +260,6 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 
 		$form->add($button);
 
-
 		$admin_page_markup .= $form->render();
 
 		return $admin_page_markup;
@@ -297,8 +299,6 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 		$mu_config_data['extra_buttons'] = $extra_buttons;
 
 		$eb_vertical = $post_data->eb_vertical;
-
-		bd($post_data);
 
 		$mu_config_data['eb_vertical'] = $eb_vertical;
 
