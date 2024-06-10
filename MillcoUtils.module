@@ -17,8 +17,6 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 	public $nonce = ''; // a page nonce we set for use in inline scripts etc
 	public $mu_settings; // some sitewide settings.
 
-	const ajax_noaccess = "ajax-noaccess";
-	const ajax_rendererror = "ajax-render-error";
 
 	public static function getModuleInfo()
 	{
@@ -111,8 +109,6 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 		// add our page edit buttons.
 		$this->addHookAfter('Page::render', $this, 'edit_buttons');
 
-		// Add Bernhard's ajax hooks.
-		$this->ajaxAddEndpoints();
 	}
 
 	public function ___execute()
@@ -371,135 +367,6 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 
 				$event->return = $updated;
 			}
-		}
-	}
-
-
-	/**
-	 * 
-	 * This are Bernhard's functions from RockFrontend to automatically add hooks for any
-	 * php files in template/ajax which is a very handy idea for htmx.
-	 * 
-	 * https://github.com/baumrock/RockFrontend
-	 * 
-	 * Honestly I should probably just add RockFronted and access these but
-	 * whilst we're still trying to keep this module slim I'm going to use them.
-	 * 
-	 */
-
-	protected function ajaxAddEndpoints(): void
-	{
-		// scan for these extensions
-		// earlier listed extensions have priority
-		$extensions = ['latte', 'php'];
-
-		// attach hook for every found endpoint
-		$added = [];
-		foreach ($extensions as $ext) {
-			$endpoints = $this->wire->files->find(
-				$this->wire->config->paths->templates . "api",
-				['extensions' => [$ext]]
-			);
-			foreach ($endpoints as $endpoint) {
-				$base = pathinfo($endpoint, PATHINFO_FILENAME);
-				if (in_array($base, $added)) continue;
-				$added[] = $base;
-				$this->wire->addHook("/ajax/$base", function (HookEvent $event) use ($endpoint) {
-
-					// Bernhard has a check in here for
-					// ensuring requests are ajax, I think in quite a few cases
-					// we won't want to do that so I'm just returning the public view.
-					return $this->ajaxPublic($endpoint);
-
-					// // make htmx endpoints only available via ajax
-					// // superusers are allowed to access them directly (for debugging)
-					// $sudo = $this->wire->user->isSuperuser();
-					// $isHtmx = isset($_SERVER['HTTP_HX_REQUEST']) && $_SERVER['HTTP_HX_REQUEST'];
-					// $ajax = $this->wire->config->ajax || $isHtmx;
-
-					// if (!$ajax and $sudo) return $this->ajaxDebug($endpoint);
-					// else return $this->ajaxPublic($endpoint);
-				});
-			}
-		}
-	}
-
-	private function ajaxDebug($endpoint): string
-	{
-		// dont catch errors when debugging
-		$raw = $this->ajaxResponse($endpoint);
-		return $raw;
-
-		// $response = Dumper::toHtml($raw);
-
-		// // render html
-		// $markup = $this->render(__DIR__ . "/stubs/ajax-debug.latte", [
-		// 	'endpoint' => $endpoint,
-		// 	'response' => $response,
-		// 	'formatted' => $this->ajaxFormatted($raw, $endpoint),
-		// ]);
-
-		// return $markup;
-	}
-
-	private function ajaxFormatted($raw, $endpoint): string
-	{
-		$extension = pathinfo($endpoint, PATHINFO_EXTENSION);
-		if ($extension === "latte") {
-			$response = $this->render($endpoint);
-		} else $response = $raw;
-
-		// is response already a string?
-		if (is_string($response)) {
-			$exceptions = [
-				self::ajax_noaccess => "No access",
-				self::ajax_rendererror => "Error rendering endpoint - see logs for details.",
-			];
-			if (array_key_exists($response, $exceptions)) {
-				throw new WireException($exceptions[$response]);
-			}
-
-			// no exception - return string
-			return $response;
-		}
-
-		// array --> json
-		if (is_array($response)) return json_encode($response, JSON_PRETTY_PRINT);
-
-		// still no string, try to cast it to string
-		try {
-			$response = (string)$response;
-		} catch (\Throwable $th) {
-			throw new WireException("Invalid return type");
-		}
-
-		return $response;
-	}
-
-	private function ajaxPublic($endpoint): string
-	{
-		try {
-			$raw = $this->ajaxResponse($endpoint);
-			$response = $this->ajaxFormatted($raw, $endpoint);
-			return $response;
-		} catch (\Throwable $th) {
-			/** @var Wire $this */
-			$this->log($th->getMessage());
-			return "Error in AJAX endpoint - error has been logged";
-		}
-	}
-
-	private function ajaxResponse($endpoint)
-	{
-		/** @var Wire $this */
-		if ($this->wire->user->isSuperuser()) {
-			return $this->wire->files->render($endpoint);
-		}
-		try {
-			return $this->wire->files->render($endpoint);
-		} catch (\Throwable $th) {
-			$this->log($th->getMessage());
-			return self::ajax_rendererror;
 		}
 	}
 
