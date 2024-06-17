@@ -31,7 +31,6 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 			'permission' => 'millco-utils',
 			'permissions' => array(
 				'millco-utils' => 'Millco Utils',
-				'millco-utils-manage' => 'Manage Millco Utils',
 				'millco-utils-editbutton' => 'Show edit button'
 			),
 
