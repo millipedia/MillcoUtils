@@ -26,8 +26,7 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 			'version' => 1,
 			'autoload' => true,
 			'singular' => true,
-			'permanent' => true,
-			'permission' => 'millco-utils',
+			'permanent' => false,
 			'permissions' => array(
 				'millco-utils' => 'Millco Utils',
 				'millco-utils-editbutton' => 'Show edit button'
