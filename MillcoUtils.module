@@ -105,7 +105,6 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 
 		// add our page edit buttons.
 		$this->addHookAfter('Page::render', $this, 'edit_buttons');
-
 	}
 
 	public function ___execute()
@@ -196,7 +195,7 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 		foreach (new \DirectoryIterator($icons_directory) as $file) {
 			if ($file->isFile()) {
 
-				if($file->getExtension() == 'svg'){
+				if ($file->getExtension() == 'svg') {
 					$icons_array[] = $file->getBasename('.svg');
 				}
 			}
@@ -395,5 +394,112 @@ class MillcoUtils extends Process implements Module, ConfigurableModule
 
 			return '?';
 		}
+	}
+
+
+	/**
+	 * Source set
+	 * 
+	 * Takes an image and does some basic source setting.
+	 * 
+	 * @param Image image
+	 * @param Int widht
+	 * @param Int height
+	 * @param Array options
+	 */
+
+
+	function source_set($image, $width = 1440, $height = 'auto', $options = array())
+	{
+
+		$image_markup = '';
+		$caption = '';
+		$alt = '';
+		$classes = '';
+
+		$quality = 72;
+		$webp_quality = 62;
+
+
+		if (isset($options['quality']) && $options['quality'] == 'high') {
+			$quality = 80;
+			$webp_quality = 80;
+		}
+
+		if (isset($options['class'])) {
+			$classes .= $options['class'];
+		} else {
+			$classes = ' image_fluid';
+		}
+
+		if ($image) {
+
+			// Resize our image.
+			$thumb = $image->size($width, $height, [
+				'quality' => $quality,
+				'webpQuality' => $webp_quality,
+				'upscaling' => true,
+				'sharpening' => 'medium'
+			]);
+
+
+			// Caption and alt text are pulled from custom fields.
+			if ($image->img_alt) {
+				$alt = $image->text_field;
+			}elseif ($image->description) {
+				$alt = $image->description;
+			}
+
+			if (isset($options['no_caption']) && $options['no_caption'] == 1) {
+				$caption = '';
+			} else {
+				if ($image->img_caption) {
+					$caption = $image->img_caption;
+				}
+			}
+
+			// default to lazy loading.
+			if (isset($options['not_lazy']) && $options['not_lazy'] == 1) {
+				$lazy = '';
+			} else {
+				$lazy = ' loading=lazy';
+			}
+
+
+			$image_markup .= '<picture>';
+			$image_markup .= '<source srcset="' . $thumb->webp->url . '" type="image/webp">';
+
+			// if our picture is wider than 480px let do a version for phones  etc....
+			// I know it's not very exact but it's better than nothing.
+			$smol_width = 480;
+
+			if ($thumb->width > $smol_width) {
+
+				$pic_ratio = $thumb->width / $thumb->height;
+
+				$smol_height = $smol_width / $pic_ratio;
+
+				$smol_pic = $image->size($smol_width, $smol_height, [
+					'quality' => $quality,
+					'webpQuality' => $webp_quality,
+					'upscaling' => false,
+					'sharpening' => 'medium'
+				]);
+
+				$image_markup .= '<source media="(max-width: 480px)" srcset="' . $smol_pic->webp->url . '" type="image/webp">';
+			}
+
+			$image_markup .= '<img class="' . $classes . '" src="' . $thumb->url . '" alt="' . $alt . '" width="' . $thumb->width . '" height="' . $thumb->height . '" ' . $lazy . '>';
+			$image_markup .= '</picture>';
+
+			// let's only wrap in a figure now if we have a caption.
+			if ($caption !== '') {
+				$image_markup = '<figure>' . $image_markup;
+				$image_markup .= '<figcaption>' . htmlspecialchars_decode($caption) . '</figcaption>';
+				$image_markup .= '</figure>';
+			}
+		}
+
+		return $image_markup;
 	}
 }
