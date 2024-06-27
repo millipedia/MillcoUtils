@@ -48,8 +48,18 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 	}
 
 	static protected $defaults = array(
+		'top' => '',
+		'right' => '',
+		'bottom' => '',
+		'left' => '',
+		'eb_vertical' => '0',
+		'twitter' => '',
+		'youtube' => '',
+		'facebook' => '',
+		'instagram' => '',
+		'extra_buttons' => ''
 	);
-
+	
 	public function __construct()
 	{
 		// populate defaults, which will get replaced with actual

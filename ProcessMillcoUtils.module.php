@@ -38,21 +38,6 @@ class ProcessMillcoUtils extends Process implements Module
 	}
 
 
-	static protected $defaults = array(
-		'top' => '',
-		'right' => '',
-		'bottom' => '',
-		'left' => '',
-		'eb_vertical' => '0',
-		'twitter' => '',
-		'youtube' => '',
-		'facebook' => '',
-		'instagram' => '',
-		'extra_buttons' => ''
-	);
-	
-
-
 	public function init()
 	{
 		parent::init();
@@ -60,11 +45,8 @@ class ProcessMillcoUtils extends Process implements Module
 
 	public function __construct()
 	{
-		// populate defaults, which will get replaced with actual
-		// configured values before the init/ready methods are called
-		$this->setArray(self::$defaults);
-	}
 
+	}
 
 	
 	public function ___execute()
@@ -165,7 +147,7 @@ class ProcessMillcoUtils extends Process implements Module
 
 		$icons_list = implode(', ', $icons_array);
 
-		$fieldset->notes = 'Current availabele icons: ' . $icons_list . ' - You can add new editbar svg icons to the MillcoUtils/icons folder.';
+		$fieldset->notes = 'Current available icons: ' . $icons_list . ' - You can add new editbar svg icons to the MillcoUtils/icons folder.';
 
 		$field->value = $moduleConfig['extra_buttons'];
 		$field->columnWidth = 100;
