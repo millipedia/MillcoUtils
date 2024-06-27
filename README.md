@@ -32,7 +32,20 @@ At the moment I've got a limited number of icons included but you can add more o
 will inline an svg file with the name whatever.svg if it exists in the site/assets/images/icons folder. 
 We normally use 'currentColor' in SVGs loading this way.
 
+## Source set and defaults for image markup
 
+	$mu->source_set($image);
+
+Source set is pushing it a bit, but if you pass an image to $mu->source_set then we'll wrap it in a picture element with webp and original versions of the image. 
+We also create a smaller version of the image for mobile devices.
+
+The function takes an image, optional width and height and then an array of various options:
+
+	echo $mu->source_set($page->featured_image, 640, 480, ["class" => " card_image", "no_caption" => 1,  "not_lazy" =>1, "quality" => "high"]);
+
+The function checks a custom image field 'img_caption' and will wrap the picture element in figure tags with a caption.
+
+Alt text is pulled from either an 'img_alt' field or the img 'description' value.
 
 # Things it doesn't yet but will soon.
 
