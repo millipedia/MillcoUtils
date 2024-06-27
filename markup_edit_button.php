@@ -29,8 +29,8 @@ function mu_editbar_icon($filename)
 	}
 }
 
-
 $moduleConfig = wire('modules')->get('MillcoUtils');
+
 $eb_position = '';
 $eb_classes = '';
 
