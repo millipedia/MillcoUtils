@@ -16,7 +16,7 @@ class ProcessMillcoUtils extends Process implements Module
 	public static function getModuleInfo()
 	{
 		return [
-			'title' => 'MillcoUtils',
+			'title' => 'Millco Utils Admin',
 			'summary' => 'Process to manage Millco Utils',
 			'version' => 1,
 			'icon' => 'cogs',
@@ -32,7 +32,7 @@ class ProcessMillcoUtils extends Process implements Module
 			'requires' => [
 				'PHP>=8.0.0',
 				'ProcessWire>=3.0.0',
-				'MillcoTasks',
+				'MillcoUtils',
 			]
 		];
 	}
