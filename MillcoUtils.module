@@ -28,7 +28,7 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 			'autoload' => true,
 			'singular' => true,
 			'permanent' => false,
-			'permission' => 'millco-utils',
+			'permission' => '',
 			'icon' => 'cogs',
 			'requires' => [
 				'PHP>=8.0.0',
