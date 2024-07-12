@@ -8,16 +8,6 @@ I was spurred into action to put these things into a module by Bernhard's [RockF
 
 # Things it does so far.
 
-## Nonce
-
-Adds a nonce property to your page which you can add to your CSP and then inline script / styles.
-
-    $page->nonce
-
-	or
-
-	$mu->nonce
-
 ## Edit bar
 
 Adds an edit link and link to the page tree to front end pages for logged in users. Superusers also get a link to edit the template. This behaves in a simlar fashion to Bernhard's RockFrontend edit bar. You can set the inital position of the toolbar in admin now (it can be dragged when editing a page as well.)
@@ -28,12 +18,42 @@ You can also add buttons by adding a link, label and icon to the relevant config
 
 At the moment I've got a limited number of icons included but you can add more or I probably will when I'm adding them. The ones I'm using at the mo are the IBM Carbon icons [grabbed from here](https://icon-sets.iconify.design/carbon/)   
 
+## Nonce
+
+Adds a nonce property to your page which you can add to your [Content Security Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP) (CSP) and then inline script / styles.
+
+    // Add your CSP metatag with the script nonce value set to $mu->nonce  
+
+	<meta http-equiv="Content-Security-Policy" content=" default-src  'self' https://cdn.usefathom.com/ https://www.youtube.com https://www.youtube-nocookie.com ; font-src 'self' ; style-src 'self' 'unsafe-inline'; script-src 'self' https://cdn.usefathom.com/ 'nonce-<?=$mu->nonce?>'; img-src * data: ;">
+
+	// This means that only scripts with the same nonce property will be allowed to run. 
+	// Any inline scripts that get added to your site via nasty comment markup or whatever will be prevented from running.  
+
+	<script nonce="<?=$mu->nonce;?>">
+		alert("Successful boop!");
+	</script>
+
+	The nonce this module creates is available both as:
+
+	$page->nonce
+
+	and
+
+	$mu->nonce
+
+I really recommend using a CSP if you don't already.
+
 ## Inline icons
 
 	$mu->file_icon('whatever');
 
 will inline an svg file with the name whatever.svg if it exists in the site/assets/images/icons folder. 
 We normally use 'currentColor' in SVGs loading this way.
+
+	// A link with an inlined SVG icon with the fill set to currentColor will
+	// pick up the text colour you've set for links and hover states in CSS  
+
+	<a href="/">Link with icon <?=$mu->file_icon('heart')?></a>
 
 ## Source set and defaults for image markup
 
