@@ -33,11 +33,11 @@ Adds a nonce property to your page which you can add to your [Content Security P
 		alert("Successful boop!");
 	</script>
 
-	The nonce this module creates is available both as:
+The nonce this module creates is available both as:
 
 	$page->nonce
 
-	and
+and
 
 	$mu->nonce
 
