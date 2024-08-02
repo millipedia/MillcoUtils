@@ -223,17 +223,26 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 
 
 			// Caption and alt text are pulled from custom fields.
+			// the name of which has varied over the years hence we check for a few different
+			// options.
 			if ($image->img_alt) {
 				$alt = $image->text_field;
+			}elseif ($image->image_alt) {
+				$alt = $image->image_alt;
 			}elseif ($image->description) {
 				$alt = $image->description;
 			}
 
+			// If 
 			if (isset($options['no_caption']) && $options['no_caption'] == 1) {
 				$caption = '';
 			} else {
 				if ($image->img_caption) {
 					$caption = $image->img_caption;
+				}elseif ($image->image_caption) {
+					$caption = $image->image_caption;
+				}elseif ($image->caption) {
+					$caption = $image->caption;
 				}
 			}
 
