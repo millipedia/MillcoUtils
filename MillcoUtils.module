@@ -24,7 +24,7 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		return [
 			'title' => 'MillcoUtils',
 			'summary' => 'Very simple config options we often use.',
-			'version' => 2,
+			'version' => 3,
 			'autoload' => true,
 			'singular' => true,
 			'permanent' => false,
