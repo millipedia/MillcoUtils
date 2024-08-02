@@ -34,7 +34,9 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 				'PHP>=8.0.0',
 				'ProcessWire>=3.0.16',
 			],
-			'installs' => ['ProcessMillcoUtils']
+			'installs' => [
+				'ProcessMillcoUtils',
+				'TextformatterMillcoUtils']
 		];
 	}
 
@@ -244,6 +246,9 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 				}elseif ($image->caption) {
 					$caption = $image->caption;
 				}
+
+				// We can't have paragraph tags in the caption.
+				$caption=mb_ereg_replace('^<p>|</p>$', '', $caption);
 			}
 
 			// default to lazy loading.
@@ -252,7 +257,6 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 			} else {
 				$lazy = ' loading=lazy';
 			}
-
 
 			$image_markup .= '<picture>';
 			$image_markup .= '<source srcset="' . $thumb->webp->url . '" type="image/webp">';

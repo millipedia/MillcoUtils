@@ -7,8 +7,6 @@ namespace ProcessWire;
  * Admin page for managing various mu settings 
  */
 
-
-
 class ProcessMillcoUtils extends Process implements Module
 {
 
@@ -30,8 +28,6 @@ class ProcessMillcoUtils extends Process implements Module
 			'singular' => false,
 			'permanent' => false,
 			'requires' => [
-				'PHP>=8.0.0',
-				'ProcessWire>=3.0.0',
 				'MillcoUtils',
 			]
 		];

@@ -1,0 +1,91 @@
+<?php namespace ProcessWire;
+
+/**
+ * A collection of tweaks in a TextFormatter
+ * 
+ */
+
+class TextformatterMillcoUtils extends Textformatter {
+
+	public static function getModuleInfo() {
+		return array(
+			'title' => 'Millco Utils Textformatter',
+			'summary' => 'A few things I like to fix for content blocks',
+			'version' => '0.1',
+			'author' => 'Stephen @ millipedia',
+			'href' => '',
+			'icon' => 'picture-o',
+			'requires' => [
+				'MillcoUtils',
+			]
+		);
+	}
+
+	/**
+	 * Format string
+	 *
+	 * @param Page $page
+	 * @param Field $field
+	 * @param string $value
+	 */
+	public function formatValue(Page $page, Field $field, &$value) {
+	
+		// Replace <br /> with <br> tags 
+
+		$value = str_replace('<br />','<br>', $value);
+
+		// TODO: this should be an option.
+
+		// Replace inline images with sourcesets.
+		// lifted from Robin's Process Images module.
+		if(strpos($value, '<img ') === false) return;
+
+		// Parse the HTML
+		if(!function_exists('str_get_html')) {
+			require __DIR__ . '/lib/simple_html_dom/simple_html_dom.php';
+		}
+		/** @var \simple_html_dom $html */
+		// Including the first five arguments because argument five (strip line breaks) should be false
+		$html = str_get_html($value, true, true, DEFAULT_TARGET_CHARSET, false);
+
+		// Loop over images
+		foreach($html->find('img') as $img) {
+
+			$pageimage = $page->filesManager->getFile($img->src);
+
+			if($pageimage){
+
+				$mu=wire('modules')->get('MillcoUtils');
+				$img_markup=$mu->source_set($pageimage);
+		
+				$img->outertext=$img_markup;
+
+			}
+		}
+
+		// Because Tiny wraps evertyhing in a paragraph tag by default then
+		// we might end up with invalid code, so let's try and regex those out.
+
+		// this isn't going to match every case but it'll get the ones on one line.
+
+		// I wonder if we could just move the opening <p> tag after the closing figure tag
+		// and then replace empty paragraphs? 
+		if (preg_match_all('#<p><figure(.+?)figure><\/p>#', $html, $matches)){
+
+			foreach($matches[0] as $key => $line) {
+
+					$new_line=str_replace('<p><figure','<figure', $line);
+					$new_line=str_replace('</figure></p>','</figure>', $new_line);
+					
+					$html = str_replace($line, $new_line, $html);
+			}
+		}
+
+
+		$value = (string) $html;
+
+
+	}
+
+
+}

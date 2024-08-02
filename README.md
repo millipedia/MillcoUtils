@@ -67,34 +67,13 @@ The function takes an image, optional width and height and then an array of vari
 
 	echo $mu->source_set($page->featured_image, 640, 480, ["class" => " card_image", "no_caption" => 1,  "not_lazy" =>1, "quality" => "high"]);
 
-The function checks a custom image field 'image_caption' and will wrap the picture element in figure tags with a caption.
+The function checks for a custom image field 'image_caption' and will wrap the picture element in figure tags with a caption.
 
 Alt text is pulled from either an 'image_alt' field or the img 'description' value.
 
-A top tip is to use Robins (Process Images)[https://github.com/Toutouwai/TextformatterProcessImages] text formatter on your content fields and then hook in this source_set function to update images. For example we have this in our ready.php file:
+# Millco Utils Textformatter
 
-	$wire->addHookAfter('TextformatterProcessImages::processImg', function(HookEvent $event) {
-
-		// The Simple HTML DOM node for the <img> tag
-		/** @var \simple_html_dom_node $img */
-		$img = $event->arguments(0);
-		// The Pageimage in the <img> src, if any (will be null for external images)
-		/** @var Pageimage $pageimage */
-		$pi = $event->arguments(1);
-
-		// Only for images that have a src corresponding to a PW Pageimage
-
-		if($pi) {
-
-			// Use source_set from our MillcoUtils module
-			// to create a source set and pull out the alt and captions nicely.
-			$mu=wire('modules')->get('MillcoUtils');
-			$img_markup=$mu->source_set($pi);	
-			$img->outertext=$img_markup;
-
-		}
-    
-	});
+The module now also installs a TextFormatter. If you add this to a text field then it replaces inline images with a source set and tidies up some tags that TinyMCE puts in but shouldn't.
 
 
 
