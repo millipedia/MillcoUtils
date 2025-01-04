@@ -199,6 +199,7 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		$classes = '';
 
 		$quality = 72;
+		$upscale=false;
 		$webp_quality = 62;
 
 
@@ -207,11 +208,17 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 			$webp_quality = 80;
 		}
 
+		if (isset($options['upscale']) && $options['upscale']) {
+			$upscale = true;
+		}
+
 		if (isset($options['class'])) {
 			$classes .= $options['class'];
 		} else {
 			$classes = ' image_fluid';
 		}
+
+
 
 		if ($image) {
 
@@ -219,7 +226,7 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 			$thumb = $image->size($width, $height, [
 				'quality' => $quality,
 				'webpQuality' => $webp_quality,
-				'upscaling' => true,
+				'upscaling' => $upscale,
 				'sharpening' => 'medium'
 			]);
 

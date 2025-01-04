@@ -59,13 +59,13 @@ We normally use 'currentColor' in SVGs loading this way.
 
 	$mu->source_set($image);
 
-Source set is pushing it a bit, but if you pass an image to $mu->source_set then we'll wrap it in a picture element with webp and original versions of the image. 
+Source set is pushing it a bit, but if you pass an image to $mu->source_set() then we'll wrap it in a picture element with webp and original versions of the image. 
 
 We also create a smaller version of the image for mobile devices.
 
 The function takes an image, optional width and height and then an array of various options:
 
-	echo $mu->source_set($page->featured_image, 640, 480, ["class" => " card_image", "no_caption" => 1,  "not_lazy" =>1, "quality" => "high"]);
+	echo $mu->source_set($page->featured_image, 640, 480, ["class" => " card_image", "no_caption" => 1,  "not_lazy" =>1, "quality" => "high", "upscale" => 1 ]);
 
 The function checks for a custom image field 'image_caption' and will wrap the picture element in figure tags with a caption.
 
