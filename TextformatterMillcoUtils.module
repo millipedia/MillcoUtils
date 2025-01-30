@@ -56,7 +56,15 @@ class TextformatterMillcoUtils extends Textformatter {
 			if($pageimage){
 
 				$mu=wire('modules')->get('MillcoUtils');
-				$img_markup=$mu->source_set($pageimage);
+
+				$options=[];
+
+				// keep any classes we already have.
+				if($img->class){
+					$options['class']= $img->class;
+				}
+
+				$img_markup=$mu->source_set(image:$pageimage , options:$options);
 		
 				$img->outertext=$img_markup;
 
