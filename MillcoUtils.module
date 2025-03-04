@@ -24,7 +24,7 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		return [
 			'title' => 'MillcoUtils',
 			'summary' => 'Very simple config options we often use.',
-			'version' => 3,
+			'version' => 103,
 			'autoload' => true,
 			'singular' => true,
 			'permanent' => false,
@@ -55,19 +55,29 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		'bottom' => '',
 		'left' => '',
 		'eb_vertical' => '0',
-		'twitter' => '',
+		'bluesky' => '',
 		'youtube' => '',
 		'facebook' => '',
 		'instagram' => '',
-		'extra_buttons' => ''
+		'extra_buttons' => '',
+		'cabin' => '0',
+		'cabin_custom' => '',
+		'fathom' => '',
+		'analytics_in_dev' => '0',
+		'inline_image_path' => 'icons'
+
 	);
+
+	public function get_defaults(){
+		return self::$defaults;
+	}
 	
 	public function __construct()
 	{
 		// populate defaults, which will get replaced with actual
 		// configured values before the init/ready methods are called
-		// again this is done in ProcessMillcoUtils now.
-		$this->setArray(self::$defaults);
+		// Updating this array is done in ProcessMillcoUtils now.
+		$this->setArray(static::$defaults);
 	}
 
 
@@ -79,7 +89,6 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		/** @var MillcoUtils $this */
 
 		// make this module available in template files using $mu
-		// eg $mu->twitter;
 		$this->wire('mu', $this);
 
 		// set a nonce we can use in script tags.
@@ -91,6 +100,9 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 
 		// add our page edit buttons.
 		$this->addHookAfter('Page::render', $this, 'edit_buttons');
+
+		// add our analytics tag
+		$this->addHookAfter('Page::render', $this, 'analytics_tags');
 	}
 
 
@@ -130,14 +142,6 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 			// which is in fact really useful.
 			if (wire('user')->isLoggedin() && $page->editable()) {
 
-				// $edit_butt_markup='<div class="mu_edit_bar">';
-
-				// // TODO 
-				// // Add different options for super users.
-				// $edit_butt_markup.= "<a class='edit-link' href='$page->editUrl'>Edit</a>";
-
-				// $edit_butt_markup.='</div>';
-
 				$path = wire('config')->paths->siteModules . 'MillcoUtils/markup_edit_button.php';
 
 				$edit_butt_markup = wire('files')->render($path);
@@ -148,6 +152,72 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 			}
 		}
 	}
+
+
+	/**
+	 * Add analytics tags
+	 */
+
+	 public function analytics_tags($event)
+	 {
+ 
+		$page = $event->object;
+		if (!($page->template == 'admin') && !($page->template == 'api')) {
+	
+			// if we're in dev mode and don't have analytics_in_dev seleted
+			// then just bail out.
+			if(wire('config')->debug && !($this->analytics_in_dev)){
+				return;
+			}
+
+			$tags_to_add='';
+
+			bd($this);
+
+			// Have we checked the Add Cabin checkbox?
+			if($this->cabin) {
+
+				// If we have a custom domain provide then use that
+				// instead of the default domain.
+				
+				$cabin_domain='scripts.withcabin.com';
+
+				if (!empty($this->cabin_custom)) {
+					$cabin_domain= $this->cabin_custom;
+				}
+
+				$tags_to_add.=' <script async defer src="https://' . $cabin_domain . '/hello.js" nonce="' . $this->nonce . '"></script>' . PHP_EOL;
+
+			}
+
+			// Add a tag for Fathom analytics (https://usefathom.com)
+			// if we've entered a site code.
+			$fathom= $this->fathom;
+
+			if (!empty($fathom)) {
+
+				$tags_to_add.=' <script src="https://cdn.usefathom.com/script.js" data-site="' . $fathom . '" nonce="' . $this->nonce . '=" defer></script>' . PHP_EOL;
+
+			}
+
+			// If we have something to add then inject
+			// it before the closing </head> tag.
+			if($tags_to_add!==''){
+				// Check for the closing </head> tag, or <body for pages without head tags.
+				$headPos = strpos($event->return, '</head>');
+				if ($headPos !== false) {
+					$event->return = substr_replace($event->return, $tags_to_add, $headPos, 0);
+				}else{
+					// should probably be checking if body tag exists instead.
+					$bodyPos = strpos($event->return, '<body');
+					if ($bodyPos !== false){
+						$event->return = substr_replace($event->return, '<head>' . $tags_to_add . '</head>', $bodyPos, 0);
+					}
+				}
+			}
+		}
+ 
+	 }
 
 
 	/**
@@ -162,8 +232,30 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 	public function file_icon($filename)
 	{
 
-		$path = wire('config')->paths->assets . 'images/icons/';
+		// We now have a config value for the base path relative to images
+		$inline_image_path=$this->inline_image_path;
+
+		$inline_image_path=str_replace('..','',$inline_image_path); // let's not iterate up any more.
+
+		// sort out dicrectory separators in case our user has added them;
+		if($inline_image_path !==''){
+			$inline_image_path = rtrim($inline_image_path, "/");
+			$inline_image_path = ltrim($inline_image_path, "/");
+			$inline_image_path.='/';
+		}
+
+		$path = wire('config')->paths->assets . 'images/' . $inline_image_path;
+
+		// In case we've passed the filename with .svg on the end then remove it.
+		// I guess it could be the case we have an oddly named file but not as often
+		// as I forget and leave the extension on.
+		$suffix= substr($filename, -4);
+		if($suffix=='.svg'){
+			$filename= substr($filename, 0, -4);
+		}
+
 		$filename = $path . $filename . '.svg';
+
 		$icon_markup = '';
 
 		if ($icon = file_get_contents($filename)) {
@@ -176,7 +268,6 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 			return '?';
 		}
 	}
-
 
 	/**
 	 * Source set
@@ -217,8 +308,6 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		} else {
 			$classes = ' image_fluid';
 		}
-
-
 
 		if ($image) {
 

@@ -47,7 +47,8 @@ I really recommend using a CSP if you don't already.
 
 	$mu->file_icon('whatever');
 
-will inline an svg file with the name whatever.svg if it exists in the site/assets/images/icons folder. 
+will inline an svg file with the name whatever.svg if it exists in the site/assets/images/ or a folder relative to that if you've configured it. NB this used to default to images/icons so if you update you might need to specify the 'icons' folder now.
+ 
 We normally use 'currentColor' in SVGs loading this way.
 
 	// A link with an inlined SVG icon with the fill set to currentColor will
@@ -75,11 +76,14 @@ Alt text is pulled from either an 'image_alt' field or the img 'description' val
 
 The module now also installs a TextFormatter. If you add this to a text field then it replaces inline images with a source set and tidies up some tags that TinyMCE puts in but shouldn't.
 
+# Analytics tag
 
+You can include either a Cabin Analytics or Fathom Analytics tag (or hey, both if you want) by providing the necessary details in the module options. 
 
 # Things it doesn't yet but will soon.
 
 - [ ] Configurable CSP
+- [ ] Automatic page reload that got mentioned in the PW forum.
 - [ ] Wire in our holding page maybe.
 
 
