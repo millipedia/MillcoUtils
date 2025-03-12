@@ -103,6 +103,12 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 
 		// add our analytics tag
 		$this->addHookAfter('Page::render', $this, 'analytics_tags');
+
+
+		// Add admin tweak styles.
+		// TODO: this should be opt in at some point.
+		$this->config->styles->add($this->config->urls->MillcoUtils . "css/admin_tweaks.css");
+		// $this->config->scripts->add($this->config->urls->MillcoUtils . "js/admin_tweaks.js");
 	}
 
 
