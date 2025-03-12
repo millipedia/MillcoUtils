@@ -60,18 +60,14 @@ class ProcessMillcoUtils extends Process implements Module
 
 		$admin_page_markup = '';
 
+
 		$moduleConfig = $this->modules->getConfig('MillcoUtils');
 
-		$admin_page_markup .= '<div class="uk-panel" style="margin:2rem 0; padding:2rem;background-color:#eee">';
+		// Show info panel. Might be nice to be able to add to this. Or stick it in an expando box like the other sections.
 
-		$admin_page_markup .= '<div><strong>Processwire Version : </strong>' .  wire('config')->versionName . '</div>';
-		$admin_page_markup .= '<div><strong>PHP version : </strong>' . phpversion('tidy') . '</div>';
-		if ($_SERVER['REMOTE_ADDR']) {
-			$admin_page_markup .= '<div><strong>Server IP address : </strong>' . $_SERVER['REMOTE_ADDR'] . '</div>';
-		}
-		$panel_info = wire('files')->render(wire('config')->paths->siteModules . 'MillcoUtils/panel_info.php');
-		$admin_page_markup .= $panel_info;
-
+		$admin_page_markup .='<div class="uk-panel" style="margin:2rem 0; padding:2rem;background-color:#eee">';
+			$panel_info = wire('files')->render(wire('config')->paths->siteModules . 'MillcoUtils/panel_info.php');
+			$admin_page_markup .= $panel_info;
 		$admin_page_markup .= '</div>';
 
 		/** @var InputfieldForm $form */
