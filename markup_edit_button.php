@@ -70,7 +70,6 @@ if ($moduleConfig->eb_vertical) {
 		box-shadow: 2px 2px 4px #666;
 		z-index: 999;
 		cursor: move;
-		<?php echo $eb_position; ?>
 	}
 
 	.mu_edit_bar a {
@@ -114,7 +113,7 @@ if ($moduleConfig->eb_vertical) {
 	}
 </style>
 
-<div id="mu_edit_bar" class="mu_edit_bar <?= $eb_classes ?>">
+<div id="mu_edit_bar" class="mu_edit_bar <?= $eb_classes ?>" style="<?= $eb_position ?>" nonce="<?= $page->nonce ?>">
 
 	<?php
 
@@ -183,6 +182,7 @@ if ($moduleConfig->eb_vertical) {
 </div>
 
 <script nonce="<?= $page->nonce ?>">
+
 	const edit_bar = document.getElementById("mu_edit_bar");
 
 	// Make the edit bar draggable:
