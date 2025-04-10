@@ -279,7 +279,7 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 
 		$inline_image_path = str_replace('..', '', $inline_image_path); // let's not iterate up any more.
 
-		// sort out dicrectory separators in case our user has added them;
+		// sort out directory separators in case our user has added them;
 		if ($inline_image_path !== '') {
 			$inline_image_path = rtrim($inline_image_path, "/");
 			$inline_image_path = ltrim($inline_image_path, "/");
