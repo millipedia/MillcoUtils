@@ -36,7 +36,8 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 			],
 			'installs' => [
 				'ProcessMillcoUtils',
-				'TextformatterMillcoUtils']
+				'TextformatterMillcoUtils'
+			]
 		];
 	}
 
@@ -68,10 +69,11 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 
 	);
 
-	public function get_defaults(){
+	public function get_defaults()
+	{
 		return self::$defaults;
 	}
-	
+
 	public function __construct()
 	{
 		// populate defaults, which will get replaced with actual
@@ -104,6 +106,9 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		// add our analytics tag
 		$this->addHookAfter('Page::render', $this, 'analytics_tags');
 
+		// add our ajax endpoints.
+		$this->ajaxAddEndpoints();
+
 
 		// Add admin tweak styles.
 		// TODO: this should be opt in at some point.
@@ -113,15 +118,51 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 
 
 	//ready() method: This is called after ProcessWire is fully bootstrapped, and is about to start rendering a page. At this point, the entire API is available and ready for use. This method can be used when you depend on the current page being accessed, like changing or adding certain behaviors or settings based on the current page or user.
-	public function ready()
-	{
-	}
+	public function ready() {}
 
-	
+
 	public function hook_nonce($event)
 	{
 		$event->return = $this->nonce;
 	}
+
+	/**
+	 * Add hooks for ajax endpoints in the templates/ajax folder.
+	 * This is a much simpler version of the RockFrontend ajaxAddEndpoints method.
+	 */
+	protected function ajaxAddEndpoints(): void
+	{
+
+		$ajax_folder = wire('config')->paths->templates . 'ajax';
+
+		// Bail out early if the folder doesn't exist.
+		if (!$this->wire->files->exists($ajax_folder)) {
+			return;
+		}
+
+		// Loop through all php files in the ajax folder
+		$ext = 'php';
+		$opt = ['extensions' => [$ext]];
+		$endpoints = $this->wire->files->find($ajax_folder, $opt);
+		foreach ($endpoints as $file) {
+
+			// get url after folder
+			// we can't use basename because we support nested folders/endpoints
+			$ajax_url = substr($file, strlen($ajax_folder), - (strlen($ext) + 1));
+
+			// all our ajax endpoints begin with /ajax/ cos hey, that's the way I like it.
+			$ajax_url = '/ajax' . $ajax_url;
+
+			wire()->addHook($ajax_url, function (HookEvent $event) use ($file) {
+
+				// All we do is include the file and let it do its own thing,
+				// so you'll need to handle the response in your own file.
+				include($file);
+
+			});
+		}
+	}
+
 
 	/**
 	 * modify the return value of Page::render() to add our edit toolbar markup. 
@@ -164,66 +205,61 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 	 * Add analytics tags
 	 */
 
-	 public function analytics_tags($event)
-	 {
- 
+	public function analytics_tags($event)
+	{
+
 		$page = $event->object;
 		if (!($page->template == 'admin') && !($page->template == 'api')) {
-	
+
 			// if we're in dev mode and don't have analytics_in_dev seleted
 			// then just bail out.
-			if(wire('config')->debug && !($this->analytics_in_dev)){
+			if (wire('config')->debug && !($this->analytics_in_dev)) {
 				return;
 			}
 
-			$tags_to_add='';
-
-			bd($this);
+			$tags_to_add = '';
 
 			// Have we checked the Add Cabin checkbox?
-			if($this->cabin) {
+			if ($this->cabin) {
 
 				// If we have a custom domain provide then use that
 				// instead of the default domain.
-				
-				$cabin_domain='scripts.withcabin.com';
+
+				$cabin_domain = 'scripts.withcabin.com';
 
 				if (!empty($this->cabin_custom)) {
-					$cabin_domain= $this->cabin_custom;
+					$cabin_domain = $this->cabin_custom;
 				}
 
-				$tags_to_add.=' <script async defer src="https://' . $cabin_domain . '/hello.js" nonce="' . $this->nonce . '"></script>' . PHP_EOL;
-
+				$tags_to_add .= ' <script async defer src="https://' . $cabin_domain . '/hello.js" nonce="' . $this->nonce . '"></script>' . PHP_EOL;
 			}
 
 			// Add a tag for Fathom analytics (https://usefathom.com)
 			// if we've entered a site code.
-			$fathom= $this->fathom;
+			$fathom = $this->fathom;
 
 			if (!empty($fathom)) {
 
-				$tags_to_add.=' <script src="https://cdn.usefathom.com/script.js" data-site="' . $fathom . '" nonce="' . $this->nonce . '=" defer></script>' . PHP_EOL;
-
+				$tags_to_add .= ' <script src="https://cdn.usefathom.com/script.js" data-site="' . $fathom . '" nonce="' . $this->nonce . '=" defer></script>' . PHP_EOL;
 			}
 
 			// If we have something to add then inject
 			// it before the closing </head> tag.
-			if($tags_to_add!==''){
+			if ($tags_to_add !== '') {
 				// Check for the closing </head> tag, or <body for pages without head tags.
 				$headPos = strpos($event->return, '</head>');
 				if ($headPos !== false) {
 					$event->return = substr_replace($event->return, $tags_to_add, $headPos, 0);
-				}else{
+				} else {
 					// should probably be checking if body tag exists instead.
 					$bodyPos = strpos($event->return, '<body');
-					if ($bodyPos !== false){
+					if ($bodyPos !== false) {
 						$event->return = substr_replace($event->return, '<head>' . $tags_to_add . '</head>', $bodyPos, 0);
 					}
 				}
 			}
 		}
- 
-	 }
+	}
 
 
 	/**
@@ -239,15 +275,15 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 	{
 
 		// We now have a config value for the base path relative to images
-		$inline_image_path=$this->inline_image_path;
+		$inline_image_path = $this->inline_image_path;
 
-		$inline_image_path=str_replace('..','',$inline_image_path); // let's not iterate up any more.
+		$inline_image_path = str_replace('..', '', $inline_image_path); // let's not iterate up any more.
 
 		// sort out dicrectory separators in case our user has added them;
-		if($inline_image_path !==''){
+		if ($inline_image_path !== '') {
 			$inline_image_path = rtrim($inline_image_path, "/");
 			$inline_image_path = ltrim($inline_image_path, "/");
-			$inline_image_path.='/';
+			$inline_image_path .= '/';
 		}
 
 		$path = wire('config')->paths->assets . 'images/' . $inline_image_path;
@@ -255,9 +291,9 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		// In case we've passed the filename with .svg on the end then remove it.
 		// I guess it could be the case we have an oddly named file but not as often
 		// as I forget and leave the extension on.
-		$suffix= substr($filename, -4);
-		if($suffix=='.svg'){
-			$filename= substr($filename, 0, -4);
+		$suffix = substr($filename, -4);
+		if ($suffix == '.svg') {
+			$filename = substr($filename, 0, -4);
 		}
 
 		$filename = $path . $filename . '.svg';
@@ -296,7 +332,7 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		$classes = '';
 
 		$quality = 72;
-		$upscale=false;
+		$upscale = false;
 		$webp_quality = 62;
 
 
@@ -331,9 +367,9 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 			// options.
 			if ($image->img_alt) {
 				$alt = $image->text_field;
-			}elseif ($image->image_alt) {
+			} elseif ($image->image_alt) {
 				$alt = $image->image_alt;
-			}elseif ($image->description) {
+			} elseif ($image->description) {
 				$alt = $image->description;
 			}
 
@@ -343,14 +379,14 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 			} else {
 				if ($image->img_caption) {
 					$caption = $image->img_caption;
-				}elseif ($image->image_caption) {
+				} elseif ($image->image_caption) {
 					$caption = $image->image_caption;
-				}elseif ($image->caption) {
+				} elseif ($image->caption) {
 					$caption = $image->caption;
 				}
 
 				// We can't have paragraph tags in the caption.
-				$caption=mb_ereg_replace('^<p>|</p>$', '', $caption);
+				$caption = mb_ereg_replace('^<p>|</p>$', '', $caption);
 			}
 
 			// default to lazy loading.

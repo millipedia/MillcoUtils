@@ -78,7 +78,13 @@ The module now also installs a TextFormatter. If you add this to a text field th
 
 # Analytics tag
 
-You can include either a Cabin Analytics or Fathom Analytics tag (or hey, both if you want) by providing the necessary details in the module options. 
+You can include either a Cabin Analytics or Fathom Analytics tag (or hey, both if you want) by providing the necessary details in the module options.
+
+# Ajax endpoints
+
+Adding php files to an /ajax/ folder in your templates directory will automatically create URL hooks for them. e.g. adding a hello-world.php file will create a URL at yousite.com/ajax/hello-world  
+It's really simple and that's all it does, so if you're using it for ajax you'll need to handle the response in your own file. 
+Benhard's [RockFrontend](https://processwire.com/modules/rock-frontend/) module has much a fancier and more configurable version of this.
 
 # Things it doesn't yet but will soon.
 
