@@ -2,5 +2,5 @@
 
 /* hide the caption checkbox when adding images to the editor because we process content images and pull captions from a custom field */
 #wrap_caption{
-	display: none;
+	display: none !important;
 }

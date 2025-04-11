@@ -71,7 +71,7 @@ class TextformatterMillcoUtils extends Textformatter {
 			}
 		}
 
-		// Because Tiny wraps evertyhing in a paragraph tag by default then
+		// Because Tiny wraps everything in a paragraph tag by default then
 		// we might end up with invalid code, so let's try and regex those out.
 
 		// this isn't going to match every case but it'll get the ones on one line.

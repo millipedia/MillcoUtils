@@ -366,7 +366,12 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 			// the name of which has varied over the years hence we check for a few different
 			// options.
 			if ($image->img_alt) {
+				$alt = $image->img_alt;
+			}elseif($image->image_alt) {
+				$alt = $image->image_alt;
+			}elseif ($image->text_field) {
 				$alt = $image->text_field;
+			}elseif ($image->description) {
 			} elseif ($image->image_alt) {
 				$alt = $image->image_alt;
 			} elseif ($image->description) {
