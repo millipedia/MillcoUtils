@@ -157,7 +157,8 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 
 				// All we do is include the file and let it do its own thing,
 				// so you'll need to handle the response in your own file.
-				include($file);
+				$response = wire('files')->render($file);
+				$event->return = $response;
 
 			});
 		}
