@@ -64,6 +64,7 @@ class TextformatterMillcoUtils extends Textformatter {
 					$options['class']= $img->class;
 				}
 
+				/** @var MillcoUtils $mu */
 				$img_markup=$mu->source_set(image:$pageimage , options:$options);
 		
 				$img->outertext=$img_markup;

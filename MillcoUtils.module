@@ -379,16 +379,19 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 				$alt = $image->description;
 			}
 
-			// If 
+			// If we have a no_caption option then don't add a caption.
 			if (isset($options['no_caption']) && $options['no_caption'] == 1) {
 				$caption = '';
 			} else {
+				// again, these are all fields I've used for the caption over the years.
 				if ($image->img_caption) {
 					$caption = $image->img_caption;
 				} elseif ($image->image_caption) {
 					$caption = $image->image_caption;
 				} elseif ($image->caption) {
 					$caption = $image->caption;
+				}elseif ($image->sub_content) {
+					$caption = $image->sub_content;
 				}
 
 				// We can't have paragraph tags in the caption.
