@@ -65,7 +65,9 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		'cabin_custom' => '',
 		'fathom' => '',
 		'analytics_in_dev' => '0',
-		'inline_image_path' => 'icons'
+		'inline_image_path' => 'icons',
+		'load_admin_tweaks' => '0',
+		'load_admin_scripts' => '0'
 
 	);
 
@@ -110,12 +112,20 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		$this->ajaxAddEndpoints();
 
 
-		// Add admin tweak styles.
-		// TODO: this should be opt in at some point.
-		$this->config->styles->add($this->config->urls->MillcoUtils . "css/admin_tweaks.css");
-		// $this->config->scripts->add($this->config->urls->MillcoUtils . "js/admin_tweaks.js");
-	}
+		// Add admin tweak styles if the user has opted in.
+		$moduleConfig = $this->modules->getConfig('MillcoUtils');
 
+		if ($moduleConfig['load_admin_tweaks']) {
+			$this->config->styles->add($this->config->urls->MillcoUtils . "css/admin_tweaks.css");
+		}
+
+		// Add HTMX to admin if the user has opted in.
+		// Cos we use HTMX in various modules I just want to be able to load it in one place.
+		if ($moduleConfig['load_admin_scripts']) {
+			$this->config->scripts->add($this->config->urls->MillcoUtils . "lib/htmx/htmx.min.js");
+		}
+
+	}
 
 	//ready() method: This is called after ProcessWire is fully bootstrapped, and is about to start rendering a page. At this point, the entire API is available and ready for use. This method can be used when you depend on the current page being accessed, like changing or adding certain behaviors or settings based on the current page or user.
 	public function ready() {}

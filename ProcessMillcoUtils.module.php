@@ -155,11 +155,11 @@ class ProcessMillcoUtils extends Process implements Module
 		$form->add($fieldset);
 
 
-		// ======  Inline images
+		// ======  Tweaks including inline images
 
 		/** @var InputfieldFieldset $fieldset */
 		$fieldset = $this->modules->get('InputfieldFieldset');
-		$fieldset->label = 'Inline images';
+		$fieldset->label = 'Tweaks';
 		$fieldset->description = '';
 		$fieldset->notes = '';
 		$fieldset->collapsed = Inputfield::collapsedYes;
@@ -174,6 +174,31 @@ class ProcessMillcoUtils extends Process implements Module
 		$field->columnWidth = 100;
 		$fieldset->add($field);
 
+		/** @var InputfieldCheckbox $field */
+		$field = $this->modules->get('InputfieldCheckbox');
+		$field->name = 'load_admin_tweaks';
+		$field->label = 'Admin CSS tweaks';
+		$field->description = 'Apply CSS admin tweaks to the backend.';
+		$field->value = 1;
+		$field->columnWidth = 50;
+		if ($moduleConfig['load_admin_tweaks']) {
+			$field->checked(true);
+		}
+		$fieldset->add($field);
+
+
+		/** @var InputfieldCheckbox $field */
+		$field = $this->modules->get('InputfieldCheckbox');
+		$field->name = 'load_admin_scripts';
+		$field->label = 'Load HTMX';
+		$field->description = 'Load HTMX library to the backend.';
+		$field->value = 1;
+		$field->columnWidth = 50;
+		if ($moduleConfig['load_admin_scripts']) {
+			$field->checked(true);
+		}
+		$fieldset->add($field);
+		
 		$form->add($fieldset);
 
 		// ======  Social media links
@@ -299,6 +324,8 @@ class ProcessMillcoUtils extends Process implements Module
 		// This appears to be only the saved data.
 		$mu_config_data = $this->modules->getConfig('MillcoUtils');
 
+		bd($mu_config_data);
+
 		// Get an array of all the config options we can have.
 		/** @var MillcoUtils $mu_instance */
 		$mu_instance = $this->modules->get('MillcoUtils');
@@ -310,7 +337,7 @@ class ProcessMillcoUtils extends Process implements Module
 		foreach($mu_config_defaults as $index => $value){
 
 			// if we have a posted value then update our value with that
-			// TODO should I be sanitizing these really...
+			// TODO should be sanitizing these really...
 			// I suspect I'm doing this in a slightly odd way.
 			 if(isset($post_data[$index])){
 				$value=$post_data[$index];
