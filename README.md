@@ -48,6 +48,12 @@ I really recommend using a CSP if you don't already.
 	$mu->file_icon('whatever');
 
 will inline an svg file with the name whatever.svg if it exists in the site/assets/images/ or a folder relative to that if you've configured it. NB this used to default to images/icons so if you update you might need to specify the 'icons' folder now.
+
+If you want to use the icons included in this module then you can use:
+
+	$mu->icon('whatever');
+
+Most of these are IBM Carbon icons which use an Apache 2.0 license.
  
 We normally use 'currentColor' in SVGs loading this way.
 

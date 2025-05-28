@@ -47,6 +47,18 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		// at the moment we have our settings on separate page now
 		// handled by ProcessMillcoUtils.... so maybe this doesn't
 		// need to be a configurable module at all now.
+
+		// Let's add the readme to the config page tho.
+
+		$readme = $this->wire->files->render(__DIR__."/README.md");
+		$inputfields->add([
+		  'type' => 'markup',
+		  'label' => 'Readme',
+		  'icon' => 'life-ring',
+		  'collapsed' => Inputfield::collapsedYesAjax,
+		  'value' => $this->wire->sanitizer->entitiesMarkdown($readme, true),
+		]);
+
 		return $inputfields;
 	}
 
@@ -86,7 +98,7 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 
 
 	// 	init() method: This is called during the initialization after all modules have been loaded but before ProcessWire has fully bootstrapped and started delivering content.
-	//  It’s the right place to add hooks or events that occur before page rendering starts.
+	//  It's the right place to add hooks or events that occur before page rendering starts.
 
 	public function init()
 	{
@@ -299,6 +311,33 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 
 		$path = wire('config')->paths->assets . 'images/' . $inline_image_path;
 
+		return $this->get_icon_markup($filename, $path);
+	}
+
+	/**
+	 * load an icon inline from our module icons folder
+	 * @param String $filename
+	 * 
+	 */
+
+	 public function icon($filename)
+	 {
+ 
+		 $path = wire('config')->paths->siteModules . 'MillcoUtils/icons/';
+		 return $this->get_icon_markup($filename, $path);
+
+	 }
+
+	/**
+	 * get_icon_markup
+	 * Given a filename and a path, grab the svg and return it as a string.
+	 * 
+	 * @param String $filenamepath
+	 * @return String
+	 */
+
+	private function get_icon_markup($filename, $path) {
+
 		// In case we've passed the filename with .svg on the end then remove it.
 		// I guess it could be the case we have an oddly named file but not as often
 		// as I forget and leave the extension on.
@@ -311,16 +350,14 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 
 		$icon_markup = '';
 
-		if ($icon = file_get_contents($filename)) {
-
+		if (file_exists($filename) && $icon = file_get_contents($filename)) {
 			$icon_markup = $icon;
-
 			return $icon_markup;
 		} else {
-
 			return '?';
 		}
 	}
+
 
 	/**
 	 * Source set
