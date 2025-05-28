@@ -324,8 +324,6 @@ class ProcessMillcoUtils extends Process implements Module
 		// This appears to be only the saved data.
 		$mu_config_data = $this->modules->getConfig('MillcoUtils');
 
-		bd($mu_config_data);
-
 		// Get an array of all the config options we can have.
 		/** @var MillcoUtils $mu_instance */
 		$mu_instance = $this->modules->get('MillcoUtils');
