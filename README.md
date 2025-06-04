@@ -92,7 +92,25 @@ Adding php files to an /ajax/ folder in your templates directory will automatica
 It's really simple and that's pretty much all it does. If you echo a JSON string in your ajax file then we use the PW url hook to return that, otherwise you'll need to deal with the response in your own file.
 Benhard's [RockFrontend](https://processwire.com/modules/rock-frontend/) module has much a fancier and more configurable version of this.
 
-# Things it doesn't yet but will soon.
+# Load iframe in modal dialog
+
+Calling:
+
+	$mu->modialog();
+
+in a template will render a native HTML dialog element and some js to enable you to load an inframe in a modal dialog. 
+I use this almost exclusively for opening the admin edit url for a page.
+
+To mark up a button or link to open in a dialog you need to give it the class 'edit_in_dialog'. By default we reload the page when the dialog is closed, if you don't want to do that then add a data-reload value of false to your link. So your markup will look something like:
+
+	<a href="' . $resource->editUrl . '" class="edit_in_dialog" data-reload="false">edit this thing</a>
+
+We don't include any CSS for the dialog by default (we have it in our skeleton CSS) but I've included some example CSS in the [example.css](example.css) file in this repository.
+
+Again, there are a couple of separate modules that do this  eg. [AdminInModal](https://github.com/MetaTunes/AdminInModal) if you need something fancier.
+
+
+# Things it doesn't yet but will soon.	
 
 - [ ] Configurable CSP
 - [ ] Automatic page reload that got mentioned in the PW forum.

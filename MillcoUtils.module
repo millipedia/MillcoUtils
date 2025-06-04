@@ -123,17 +123,16 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		// add our ajax endpoints.
 		$this->ajaxAddEndpoints();
 
-
 		// Add admin tweak styles if the user has opted in.
 		$moduleConfig = $this->modules->getConfig('MillcoUtils');
 
-		if ($moduleConfig['load_admin_tweaks']) {
+		if (array_key_exists('load_admin_tweaks', $moduleConfig) && $moduleConfig['load_admin_tweaks']) {
 			$this->config->styles->add($this->config->urls->MillcoUtils . "css/admin_tweaks.css");
 		}
 
 		// Add HTMX to admin if the user has opted in.
 		// Cos we use HTMX in various modules I just want to be able to load it in one place.
-		if ($moduleConfig['load_admin_scripts']) {
+		if (array_key_exists('load_admin_scripts', $moduleConfig) && $moduleConfig['load_admin_scripts']) {
 			$this->config->scripts->add($this->config->urls->MillcoUtils . "lib/htmx/htmx.min.js");
 		}
 
@@ -212,7 +211,7 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 			// which is in fact really useful.
 			if (wire('user')->isLoggedin() && $page->editable()) {
 
-				$path = wire('config')->paths->siteModules . 'MillcoUtils/markup_edit_button.php';
+				$path = wire('config')->paths->siteModules . 'MillcoUtils/markup/markup_edit_button.php';
 
 				$edit_butt_markup = wire('files')->render($path);
 
@@ -356,6 +355,28 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		} else {
 			return '?';
 		}
+	}
+
+	/**
+	 * Return the markup for our modal dialog widget.
+	 * 
+	 * @return String
+	 */
+
+	public function modialog()
+	{
+
+		// Bail out early if we don't have permission to do this.
+		if (!(wire('user')->hasPermission('millco-utils'))) {
+			return;
+		}
+
+		$path = wire('config')->paths->siteModules . 'MillcoUtils/markup/modialog.php';
+
+		$modialog_markup = wire('files')->render($path, ['mu' => $this]);
+
+		return $modialog_markup;
+
 	}
 
 
