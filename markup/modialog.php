@@ -72,20 +72,21 @@
 			}
 		});
 
-		// Add a listener to any links or buttons with an edit_in_dialog class
-		document.querySelectorAll('.edit_in_dialog').forEach(function(eid_button) {
+		// Add a listener to any links or buttons with an open_in_dialog class
+		document.querySelectorAll('.open_in_dialog').forEach(function(oid_button) {
 			
-			eid_button.addEventListener('click', function(e) {
+			oid_button.addEventListener('click', function(e) {
 
 				e.preventDefault();
 
-				if(eid_button.dataset.reload == 'false'){
+				if(oid_button.dataset.reload == 'false'){
 					window.modialog_needs_reload = false;
 				}else{
 					window.modialog_needs_reload = true;
 				}
-
-				modialog_iframe(eid_button.href + '&modal=1');
+				
+				// not sure we should explicitly add the modal=1 here.
+				modialog_iframe(oid_button.href + '&modal=1');
 
 			});
 
