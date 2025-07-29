@@ -270,7 +270,7 @@ class ProcessMillcoUtils extends Process implements Module
 		$field = $this->modules->get('InputfieldText');
 		$field->name = 'fathom';
 		$field->label = 'Add a Fathom site code';
-		$field->notes = 'This will something like <em>GZRYZGYC</em>';
+		$field->notes = 'This will be something like GZRYZGYC<';
 		$field->value = $moduleConfig['fathom'];
 		$field->columnWidth = 75;
 		$fieldset->add($field);
