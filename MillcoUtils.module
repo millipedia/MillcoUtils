@@ -353,7 +353,14 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 			$icon_markup = $icon;
 			return $icon_markup;
 		} else {
+
+			// Dump to Tracy if it's installed.
+			if(function_exists('bd')){
+				bd('missing icon: ' . $filename);
+			}
+
 			return '?';
+		
 		}
 	}
 
