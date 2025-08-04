@@ -289,7 +289,8 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 	 * @param String $filename
 	 * 
 	 * Takes the name of an svg file (without extension) and reads in the data 
-	 * from the file if it exists in /site/assets/images/icons
+	 * from the file if it exists in /site/assets/images/
+	 * You can set a subfolder in the utils admin settings to change the path.
 	 * tip: using currentColor in your SVG is very useful.
 	 */
 
@@ -299,7 +300,7 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		// We now have a config value for the base path relative to images
 		$inline_image_path = $this->inline_image_path;
 
-		$inline_image_path = str_replace('..', '', $inline_image_path); // let's not iterate up any more.
+		$inline_image_path = str_replace('..', '', $inline_image_path); // let's not allow iterating up the path.
 
 		// sort out directory separators in case our user has added them;
 		if ($inline_image_path !== '') {
@@ -390,9 +391,9 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 	/**
 	 * Source set
 	 * 
-	 * Takes an image and does some basic source setting.
+	 * Takes a Pageimage object and does some basic source setting.
 	 * 
-	 * @param Image image
+	 * @param Pageimage $image
 	 * @param Int widht
 	 * @param Int height
 	 * @param Array options
