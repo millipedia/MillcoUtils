@@ -504,7 +504,18 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 				$image_markup .= '<source media="(max-width: 480px)" srcset="' . $smol_pic->webp->url . '" type="image/webp">';
 			}
 
-			$image_markup .= '<img class="' . $classes . '" src="' . $thumb->url . '" alt="' . $alt . '" width="' . $thumb->width . '" height="' . $thumb->height . '" ' . $lazy . '>';
+			$image_tag_markup = '<img class="' . $classes . '" src="' . $thumb->url . '" alt="' . $alt . '" width="' . $thumb->width . '" height="' . $thumb->height . '" ' . $lazy . '>';
+
+
+			// just in case we want to return just the image tag without the picture tag.
+			// ... not really a source set then, but hey, I've just needed to do it.
+			if (isset($options['image_tag_only']) && $options['image_tag_only']) {
+				return $image_tag_markup;
+			}else{
+				$image_markup .= $image_tag_markup;
+			}
+
+
 			$image_markup .= '</picture>';
 
 			// let's only wrap in a figure now if we have a caption.
