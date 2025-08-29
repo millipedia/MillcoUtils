@@ -285,6 +285,24 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 
 
 	/**
+	 * Add open graph tags
+	 * 
+	 * @param Array $options
+	 * @return String
+	 */
+
+	 public function open_graph_tags($options=[])
+	 {
+
+		$path = wire('config')->paths->siteModules . 'MillcoUtils/markup/open_graph_tags.php';
+
+		$open_graph_markup = wire('files')->render($path, ['options' => $options]);
+
+		return $open_graph_markup;
+
+	 }
+
+	/**
 	 * load an icon inline from a file
 	 * @param String $filename
 	 * 
