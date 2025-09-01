@@ -55,6 +55,15 @@ class ProcessMillcoUtils extends Process implements Module
 		}
 
 		// lets see if this a page called analytisc and if it then then redirect to the analytics page.
+		if (wire('page')->template == 'admin' && wire('page')->name == 'analytics') {
+
+			$moduleConfig = $this->modules->getConfig('MillcoUtils');
+			if(isset($moduleConfig['analytics_public_dashboard']) && $moduleConfig['analytics_public_dashboard'] != ''	){
+				wire()->session->redirect($moduleConfig['analytics_public_dashboard']);
+			}else{
+				return 'No public dashboard address set. Please add one in the Utils page.';
+			}
+		}
 
 		if ($this->input->post('submit')) {
 			$this->mu_save_settings($this->input->post);
@@ -67,7 +76,7 @@ class ProcessMillcoUtils extends Process implements Module
 
 		// Show info panel. Might be nice to be able to add to this. Or stick it in an expando box like the other sections.
 
-		$admin_page_markup .='<div class="uk-panel" style="margin:2rem 0; padding:2rem;background-color:#eee">';
+		$admin_page_markup .='<div class="uk-panel uk-background-muted uk-padding-small uk-margin-bottom">';
 			$panel_info = wire('files')->render(wire('config')->paths->siteModules . 'MillcoUtils/panel_info.php');
 			$admin_page_markup .= $panel_info;
 		$admin_page_markup .= '</div>';
@@ -297,6 +306,16 @@ class ProcessMillcoUtils extends Process implements Module
 		$field->value = $moduleConfig['cabin_custom'];
 		$field->notes = 'If you use a custom domain on Cabin eg cabin.millipedia.net then enter it here.';
 		$field->columnWidth = 75;
+		$fieldset->add($field);
+
+
+		/** @var InputfieldText $field */
+		$field = $this->modules->get('InputfieldText');
+		$field->name = 'analytics_public_dashboard';
+		$field->label = 'Public dashboard address';
+		$field->value = $moduleConfig['analytics_public_dashboard'];
+		$field->notes = 'Link to your public dashboard on Cabin or Fathom. If you create an admin page called analytics that uses the millcoUtils process then we will use this to redirect you to your dashboard.';
+		$field->columnWidth = 100;
 		$fieldset->add($field);
 
 		$form->add($fieldset);
