@@ -46,15 +46,9 @@ class ProcessMillcoUtils extends Process implements Module
 	
 	public function ___execute()
 	{
-		// We don't show the manage settings unless you have
-		// the millco-utils-manage permissions.
-		// TODO - we don't want to show this page at all if you don't have permissions....
-		// must work out how.
-		if (!(wire('user')->hasPermission('millco-utils-manage'))) {
-			return 'You require additional permissions to edit these settings.';
-		}
 
 		// lets see if this a page called analytisc and if it then then redirect to the analytics page.
+		// we check this before we check if the user has permissions to edit the settings.
 		if (wire('page')->template == 'admin' && wire('page')->name == 'analytics') {
 
 			$moduleConfig = $this->modules->getConfig('MillcoUtils');
@@ -65,7 +59,15 @@ class ProcessMillcoUtils extends Process implements Module
 			}
 		}
 
-		if ($this->input->post('submit')) {
+		// We don't show the manage settings unless you have
+		// the millco-utils-manage permissions.
+		// TODO - we don't want to show this page at all if you don't have permissions....
+		// must work out how.
+		if (!(wire('user')->hasPermission('millco-utils-manage'))) {
+			return 'You require additional permissions to edit these settings.';
+		}
+
+			if ($this->input->post('submit')) {
 			$this->mu_save_settings($this->input->post);
 		}
 

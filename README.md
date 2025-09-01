@@ -1,10 +1,12 @@
 # MillcoUtils
 
-Very early (not really ready for public consumption) and very opinionated ProcessWire module that does a couple of useful things that I like to have across most sites.
+Very opinionated ProcessWire module that does useful things that I like to have across most sites. 
 
-One day it might have some more useful things.
+It is very much tied into the way we build sites so might not be super useful for you, but we use it on pretty much all the sites we build.
 
 I was spurred into action to put these things into a module by Bernhard's [RockFrontend](https://processwire.com/modules/rock-frontend/) module. That's a lot fancier than this is ever likely to be so go and check that out.
+
+stephen.
 
 # Things it does so far.
 
@@ -82,9 +84,11 @@ Alt text is pulled from either an 'image_alt' field or the img 'description' val
 
 The module now also installs a TextFormatter. If you add this to a text field then it replaces inline images with a source set and tidies up some tags that TinyMCE puts in but shouldn't.
 
-# Analytics tag
+# Analytics
 
-You can include either a Cabin Analytics or Fathom Analytics tag (or hey, both if you want) by providing the necessary details in the module options.
+You can include either a Cabin Analytics or Fathom Analytics tag (or hey, both if you want) by providing the necessary details in the Analytics section on the utils page.
+
+To add a link to your analytics dashboard to the admin menu, then first add the address of your dashboard page to the Public Dashboard field. Then create a page under the Admin parent with the name 'analytics' and set it to use the ProcessMillcoUtils process. That menu item will then just redirect to whatever you have in the Public Dashboard field.
 
 # Ajax endpoints
 
