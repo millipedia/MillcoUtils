@@ -54,6 +54,8 @@ class ProcessMillcoUtils extends Process implements Module
 			return 'You require additional permissions to edit these settings.';
 		}
 
+		// lets see if this a page called analytisc and if it then then redirect to the analytics page.
+
 		if ($this->input->post('submit')) {
 			$this->mu_save_settings($this->input->post);
 		}

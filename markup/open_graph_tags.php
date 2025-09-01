@@ -7,10 +7,6 @@
  */
 
 
-// meh this isn't always right but it'll do as a fallback for the mo.
-$site_url_canonical=$_SERVER['HTTP_HOST'];
-
-
 // Site name
 if(isset($options['site_name'])){
 	$site_name=$options['site_name'];
@@ -44,9 +40,9 @@ if($page->{$summary_field_name}){
 // Truncate string to closest sentence within 165 characters
 $desc = $sanitizer->truncate($desc, 165, 'sentence');
 
-
 // NB. ProCache removes the quotes from the following metatags
 // so they should NOT end with a slash for closing the tag. Who knew?
+echo '<meta name="description" content="'.$desc.'">' . PHP_EOL;
 echo '<meta property="og:type" content="website">' . PHP_EOL;
 echo '<meta property="og:title" content="'.$millco_title.'">' . PHP_EOL;
 echo '<meta property="og:description" content="'.$desc.'">' . PHP_EOL;
@@ -99,9 +95,9 @@ if($page->{$open_graph_image_field} && !$use_default_images){
 }else{
 
 	// do we have default images?
-	// TODO: should check for png as well really.
-	$og_landscape_image='og_landscape.jpg';
-	$og_square_image='og_square.jpg';
+	// TODO: should check for jpg as well really.
+	$og_landscape_image='og_landscape.png';
+	$og_square_image='og_square.png';
 
 	if(isset($options['og_landscape_image'])){
 		$og_landscape_image=$options['og_landscape_image'];

@@ -109,7 +109,29 @@ We don't include any CSS for the dialog by default (we have it in our skeleton C
 
 Again, there are a couple of separate modules that do this  eg. [AdminInModal](https://github.com/MetaTunes/AdminInModal) if you need something fancier.
 
+# Open Graph tags
 
+You can add the usual open graph tags by calling
+
+	$mu->open_graph_tags();
+
+By default this will generate summary, description and image tags from some standard fields we normally use that are named: summary / content / featured_image.
+The code also looks for default OG images in assets/images called 'og_landscape.png' and 'og_square.png'. 
+
+You can pass an array of options to the function if you want to use specify different fields or images, or if you want a particular page to always use the default images rather than one a user has uploaded. eg:
+
+
+	// include open graph tags
+	$og_options = [];
+	$og_options['site_name'] = 'Fancy new site';
+	$og_options['og_landscape_image'] = 'og_landscape.svg';
+	$og_options['og_square_image'] = 'og_square.svg';
+	if($page->template->name == 'home'){
+		$og_options['use_default_images'] = true;
+	}
+	echo $mu->open_graph_tags($og_options);
+
+	
 # Things it doesn't yet but will soon.	
 
 - [ ] Configurable CSP
