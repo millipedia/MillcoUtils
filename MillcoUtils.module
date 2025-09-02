@@ -128,7 +128,7 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		// Add admin tweak styles if the user has opted in.
 		$moduleConfig = $this->modules->getConfig('MillcoUtils');
 
-		if(wire('page')->template != 'admin'){		// we only want to do this on the frontend.
+		if(!wire('user')->isLoggedin()){		// we only want to do this on the frontend.
 			if(array_key_exists('holding_page', $moduleConfig) && $moduleConfig['holding_page'] != ''){
 
 				$allow_access = false;
