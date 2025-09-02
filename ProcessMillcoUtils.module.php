@@ -79,7 +79,7 @@ class ProcessMillcoUtils extends Process implements Module
 		// Show info panel. Might be nice to be able to add to this. Or stick it in an expando box like the other sections.
 
 		$admin_page_markup .='<div class="uk-panel uk-background-muted uk-padding-small uk-margin-bottom">';
-			$panel_info = wire('files')->render(wire('config')->paths->siteModules . 'MillcoUtils/panel_info.php');
+			$panel_info = wire('files')->render(wire('config')->paths->siteModules . 'MillcoUtils/panel_info.php', ['moduleConfig' => $moduleConfig]);
 			$admin_page_markup .= $panel_info;
 		$admin_page_markup .= '</div>';
 
@@ -179,12 +179,23 @@ class ProcessMillcoUtils extends Process implements Module
 
 		/** @var InputfieldText $field */
 		$field = $this->modules->get('InputfieldText');
+		$field->label = 'Show holding page';
+		$field->description = '';
+		$field->notes = 'If you enter a password here then we will show a holding page to non-logged in users.';
+		$field->name = 'holding_page';
+		$field->value = $moduleConfig['holding_page'];
+		$field->columnWidth = 50;
+		$fieldset->add($field);
+		
+
+		/** @var InputfieldText $field */
+		$field = $this->modules->get('InputfieldText');
 		$field->label = 'Path to inline images';
 		$field->description = 'This is relative to the assets/images folder.';
 		$field->notes = 'This used to be a folder called \'icons\' so if you\'ve updated from a previous version of this module then check things are working as expected.';
 		$field->name = 'inline_image_path';
 		$field->value = $moduleConfig['inline_image_path'];
-		$field->columnWidth = 100;
+		$field->columnWidth = 50;
 		$fieldset->add($field);
 
 		/** @var InputfieldCheckbox $field */

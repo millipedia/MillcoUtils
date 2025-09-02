@@ -76,6 +76,7 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		'cabin' => '0',
 		'cabin_custom' => '',
 		'fathom' => '',
+		'holding_page' => '',
 		'analytics_in_dev' => '0',
 		'analytics_public_dashboard' => '',
 		'inline_image_path' => 'icons',
@@ -127,6 +128,47 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		// Add admin tweak styles if the user has opted in.
 		$moduleConfig = $this->modules->getConfig('MillcoUtils');
 
+		if(wire('page')->template != 'admin'){		// we only want to do this on the frontend.
+			if(array_key_exists('holding_page', $moduleConfig) && $moduleConfig['holding_page'] != ''){
+
+				$allow_access = false;
+				$error_message = '';
+
+				// are we logged in?
+				if(wire('user')->isLoggedin() || wire('session')->loggedin){
+					$allow_access = true;
+				}else{
+
+					// check for submitted password 
+					if(	wire('input')->post->pass) {
+						$pass =\strtolower(wire('input')->post->pass);
+						if($pass == $moduleConfig['holding_page']) {
+								wire('session')->loggedin = 1;
+								$allow_access = true;
+						} else {
+								wire('session')->login_error = 'Please check your Password';
+								$error_message = 'Please check your Password';
+						}
+					}
+				}
+
+				if(!$allow_access){// don't allow access to the site and show the holding page.
+
+					// Do we have a file holding_page.php in the templates folder?
+					
+					if(file_exists(wire('config')->paths->templates . 'holding_page.php')){
+						$holding_page_file = wire('config')->paths->templates . 'holding_page.php';
+					}else{	// Use our module version.
+						$holding_page_file = wire('config')->paths->siteModules . 'MillcoUtils/markup/holding_page.php';
+					}
+
+					include($holding_page_file);
+					exit(0);
+				}
+			}
+		}
+		
+		// Add admin tweak styles if the user has opted in.
 		if (array_key_exists('load_admin_tweaks', $moduleConfig) && $moduleConfig['load_admin_tweaks']) {
 			$this->config->styles->add($this->config->urls->MillcoUtils . "css/admin_tweaks.css");
 		}
@@ -142,7 +184,9 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 	//ready() method: This is called after ProcessWire is fully bootstrapped, and is about to start rendering a page. At this point, the entire API is available and ready for use. This method can be used when you depend on the current page being accessed, like changing or adding certain behaviors or settings based on the current page or user.
 	public function ready() {}
 
-
+	/**
+	 * Attach the nonce to the return value of Page::nonce.
+	 */
 	public function hook_nonce($event)
 	{
 		$event->return = $this->nonce;
