@@ -144,7 +144,7 @@ The default holding page template has a form so that non-admin users can log in 
 
 - [ ] Configurable CSP
 - [ ] Automatic page reload that got mentioned in the PW forum.
-- [ ] Wire in our holding page maybe.
+- [x] Wire in our holding page maybe.
 
 
 stephen at [millipedia.com](https://millipedia.com)
