@@ -50,13 +50,13 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 
 		// Let's add the readme to the config page tho.
 
-		$readme = $this->wire->files->render(__DIR__."/README.md");
+		$readme = $this->wire->files->render(__DIR__ . "/README.md");
 		$inputfields->add([
-		  'type' => 'markup',
-		  'label' => 'Readme',
-		  'icon' => 'life-ring',
-		  'collapsed' => Inputfield::collapsedYesAjax,
-		  'value' => $this->wire->sanitizer->entitiesMarkdown($readme, true),
+			'type' => 'markup',
+			'label' => 'Readme',
+			'icon' => 'life-ring',
+			'collapsed' => Inputfield::collapsedYesAjax,
+			'value' => $this->wire->sanitizer->entitiesMarkdown($readme, true),
 		]);
 
 		return $inputfields;
@@ -125,49 +125,8 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		// add our ajax endpoints.
 		$this->ajaxAddEndpoints();
 
-		// Add admin tweak styles if the user has opted in.
 		$moduleConfig = $this->modules->getConfig('MillcoUtils');
 
-		if(!wire('user')->isLoggedin()){		// we only want to do this on the frontend.
-			if(array_key_exists('holding_page', $moduleConfig) && $moduleConfig['holding_page'] != ''){
-
-				$allow_access = false;
-				$error_message = '';
-
-				// are we logged in?
-				if(wire('user')->isLoggedin() || wire('session')->loggedin){
-					$allow_access = true;
-				}else{
-
-					// check for submitted password 
-					if(	wire('input')->post->pass) {
-						$pass =\strtolower(wire('input')->post->pass);
-						if($pass == $moduleConfig['holding_page']) {
-								wire('session')->loggedin = 1;
-								$allow_access = true;
-						} else {
-								wire('session')->login_error = 'Please check your Password';
-								$error_message = 'Please check your Password';
-						}
-					}
-				}
-
-				if(!$allow_access){// don't allow access to the site and show the holding page.
-
-					// Do we have a file holding_page.php in the templates folder?
-					
-					if(file_exists(wire('config')->paths->templates . 'holding_page.php')){
-						$holding_page_file = wire('config')->paths->templates . 'holding_page.php';
-					}else{	// Use our module version.
-						$holding_page_file = wire('config')->paths->siteModules . 'MillcoUtils/markup/holding_page.php';
-					}
-
-					include($holding_page_file);
-					exit(0);
-				}
-			}
-		}
-		
 		// Add admin tweak styles if the user has opted in.
 		if (array_key_exists('load_admin_tweaks', $moduleConfig) && $moduleConfig['load_admin_tweaks']) {
 			$this->config->styles->add($this->config->urls->MillcoUtils . "css/admin_tweaks.css");
@@ -178,11 +137,57 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		if (array_key_exists('load_admin_scripts', $moduleConfig) && $moduleConfig['load_admin_scripts']) {
 			$this->config->scripts->add($this->config->urls->MillcoUtils . "lib/htmx/htmx.min.js");
 		}
-
 	}
 
 	//ready() method: This is called after ProcessWire is fully bootstrapped, and is about to start rendering a page. At this point, the entire API is available and ready for use. This method can be used when you depend on the current page being accessed, like changing or adding certain behaviors or settings based on the current page or user.
-	public function ready() {}
+	public function ready()
+	{
+
+		// This is where we check for a holding page.
+		// This can't go in init because the page isn't loaded yet.
+
+		if (wire('page')->template != 'admin') {		// we only want to do this on the frontend.
+
+			$moduleConfig = $this->modules->getConfig('MillcoUtils');
+
+			if (array_key_exists('holding_page', $moduleConfig) && $moduleConfig['holding_page'] != '') {
+
+				$allow_access = false;
+				$error_message = '';
+
+				// are we logged in?
+				if (wire('user')->isLoggedin() || wire('session')->loggedin) {
+					$allow_access = true;
+				} else {
+
+					// check for submitted password 
+					if (wire('input')->post->pass) {
+						$pass = \strtolower(wire('input')->post->pass);
+						if ($pass == $moduleConfig['holding_page']) {
+							wire('session')->loggedin = 1;
+							$allow_access = true;
+						} else {
+							wire('session')->login_error = 'Please check your Password';
+							$error_message = 'Please check your Password';
+						}
+					}
+				}
+
+				if (!$allow_access) { // don't allow access to the site and show the holding page.
+
+					// Do we have a file holding_page.php in the templates folder?
+					if (file_exists(wire('config')->paths->templates . 'holding_page.php')) {
+						$holding_page_file = wire('config')->paths->templates . 'holding_page.php';
+					} else {// Use our module version.
+						$holding_page_file = wire('config')->paths->siteModules . 'MillcoUtils/markup/holding_page.php';
+					}
+
+					include($holding_page_file);
+					exit(0);
+				}
+			}
+		}
+	}
 
 	/**
 	 * Attach the nonce to the return value of Page::nonce.
@@ -225,7 +230,6 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 				// so you'll need to handle the response in your own file.
 				$response = wire('files')->render($file);
 				$event->return = $response;
-
 			});
 		}
 	}
@@ -336,16 +340,15 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 	 * @return String
 	 */
 
-	 public function open_graph_tags($options=[])
-	 {
+	public function open_graph_tags($options = [])
+	{
 
 		$path = wire('config')->paths->siteModules . 'MillcoUtils/markup/open_graph_tags.php';
 
 		$open_graph_markup = wire('files')->render($path, ['options' => $options]);
 
 		return $open_graph_markup;
-
-	 }
+	}
 
 	/**
 	 * load an icon inline from a file
@@ -383,13 +386,12 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 	 * 
 	 */
 
-	 public function icon($filename)
-	 {
- 
-		 $path = wire('config')->paths->siteModules . 'MillcoUtils/icons/';
-		 return $this->get_icon_markup($filename, $path);
+	public function icon($filename)
+	{
 
-	 }
+		$path = wire('config')->paths->siteModules . 'MillcoUtils/icons/';
+		return $this->get_icon_markup($filename, $path);
+	}
 
 	/**
 	 * get_icon_markup
@@ -399,7 +401,8 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 	 * @return String
 	 */
 
-	private function get_icon_markup($filename, $path) {
+	private function get_icon_markup($filename, $path)
+	{
 
 		// In case we've passed the filename with .svg on the end then remove it.
 		// I guess it could be the case we have an oddly named file but not as often
@@ -419,12 +422,11 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		} else {
 
 			// Dump to Tracy if it's installed.
-			if(function_exists('bd')){
+			if (function_exists('bd')) {
 				bd('missing icon: ' . $filename);
 			}
 
 			return '?';
-		
 		}
 	}
 
@@ -447,7 +449,6 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		$modialog_markup = wire('files')->render($path, ['mu' => $this]);
 
 		return $modialog_markup;
-
 	}
 
 
@@ -507,11 +508,11 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 			// options.
 			if ($image->img_alt) {
 				$alt = $image->img_alt;
-			}elseif($image->image_alt) {
+			} elseif ($image->image_alt) {
 				$alt = $image->image_alt;
-			}elseif ($image->text_field) {
+			} elseif ($image->text_field) {
 				$alt = $image->text_field;
-			}elseif ($image->description) {
+			} elseif ($image->description) {
 			} elseif ($image->image_alt) {
 				$alt = $image->image_alt;
 			} elseif ($image->description) {
@@ -529,7 +530,7 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 					$caption = $image->image_caption;
 				} elseif ($image->caption) {
 					$caption = $image->caption;
-				}elseif ($image->sub_content) {
+				} elseif ($image->sub_content) {
 					$caption = $image->sub_content;
 				}
 
@@ -574,7 +575,7 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 			// ... not really a source set then, but hey, I've just needed to do it.
 			if (isset($options['image_tag_only']) && $options['image_tag_only']) {
 				return $image_tag_markup;
-			}else{
+			} else {
 				$image_markup .= $image_tag_markup;
 			}
 
