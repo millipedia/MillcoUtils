@@ -280,7 +280,7 @@ class ProcessMillcoUtils extends Process implements Module
 		/** @var InputfieldCheckbox $field */
 		$field = $this->modules->get('InputfieldCheckbox');
 		$field->name = 'analytics_in_dev';
-		$field->label = 'Always include anlytics tag';
+		$field->label = 'Always include analytics tag';
 		$field->notes = 'By default we dont add tags if the site is in dev mode.';
 		$field->value = 1;
 		if ($moduleConfig['analytics_in_dev']) {
@@ -333,6 +333,31 @@ class ProcessMillcoUtils extends Process implements Module
 
 		$form->add($fieldset);
 
+
+		// ======  Remove old install files
+
+		if($this->install_files_detected()){
+
+			/** @var InputfieldFieldset $fieldset */
+			$fieldset = $this->modules->get('InputfieldFieldset');
+			$fieldset->label = 'Install Files Detected';
+			$fieldset->description = '';
+
+			$fieldset->collapsed = Inputfield::collapsedNo;
+		
+			/** @var InputfieldCheckbox $field */
+			$field = $this->modules->get('InputfieldCheckbox');
+			$field->name = 'remove_install_files';
+			$field->label = 'Remove install files';
+			$field->notes = 'We have detected that you have some install files in your site root. If these are not needed then they can be removed. Careful now.';
+			$field->value = 1;
+			$field->columnWidth = 100;
+			$fieldset->add($field);
+
+			$form->add($fieldset);
+
+		}
+	
 		/** @var InputfieldSubmit $button */
 		$button = $this->modules->get('InputfieldSubmit');
 		$button->value = 'Save';
@@ -366,20 +391,44 @@ class ProcessMillcoUtils extends Process implements Module
 		// loop through our possible config options
 		// and if we have posted value then update it.
 
+		$settings_updated = false;
+		$message_content='';
+
 		foreach($mu_config_defaults as $index => $value){
 
 			// if we have a posted value then update our value with that
 			// TODO should be sanitizing these really...
 			// I suspect I'm doing this in a slightly odd way.
 			 if(isset($post_data[$index])){
+
+				if($value != $post_data[$index]){
+					
 				$value=$post_data[$index];
+				$settings_updated = true;
+				}
+
+
 			 }
 
 			 $mu_config_data[$index]=$value;
 
 		}
 
-		$this->message('Settings saved'); // TODO check we have actually updated something.
+		if($settings_updated){
+			$message_content.='Settings saved.';
+		}else{
+			$message_content.='No settings updated.';
+		}
+
+		if(isset($post_data['remove_install_files'])){
+			if($this->remove_install_files()){
+				$message_content.=' Install files removed.';
+			}else{
+				$message_content.=' No install files removed.';
+			}
+		}
+
+		$this->message($message_content);
 
 		$this->modules->saveConfig('MillcoUtils', $mu_config_data);
 
@@ -387,6 +436,68 @@ class ProcessMillcoUtils extends Process implements Module
 		/** @var Wire $this */
 		$this->session->redirect('./');
 	}
+
+
+	/**
+	 * Check if we have any install files in the site root.
+	 * 
+	 * @return bool
+	 */
+	function install_files_detected(){
+
+		$site_root = wire('config')->paths->root;
+
+		// iterate through the root directory
+
+		// if we find any directories that start with .wire-3 then return true
+		foreach(new \DirectoryIterator($site_root) as $file){
+
+			if($file->isDir() && substr($file->getFilename(), 0, 7) == '.wire-3'){
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Remove the install files from the site root.
+	 * 
+	 */
+	function remove_install_files(){
+
+		$files_removed = false;
+		$site_root = wire('config')->paths->root;
+		
+		foreach(new \DirectoryIterator($site_root) as $file){
+
+			if($file->isDir() && substr($file->getFilename(), 0, 7) == '.wire-3'){
+
+				if(wire('files')->rmdir($site_root . $file->getFilename(), true)){
+					$this->log("Removed directory: " . $file->getFilename());
+					$files_removed = true;
+				}else{	
+					$this->log("Failed to remove directory: " . $file->getFilename());
+				}
+			}
+
+			// also check for files beginning index-3 or htaccess-3.
+			if($file->isFile() && (substr($file->getFilename(), 0, 8) == 'index-3.' || substr($file->getFilename(), 0, 11) == 'htaccess-3.')){
+
+				if(unlink($site_root . $file->getFilename())){
+					$this->log("Removed file: " . $file->getFilename());
+					$files_removed = true;
+				}else{
+					$this->log("Failed to remove file: " . $file->getFilename());
+				}
+				
+			}
+
+		}
+
+		return $files_removed;
+	}
+
 
 
 }
