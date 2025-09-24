@@ -448,13 +448,18 @@ class ProcessMillcoUtils extends Process implements Module
 		$site_root = wire('config')->paths->root;
 
 		// iterate through the root directory
-
-		// if we find any directories that start with .wire-3 then return true
 		foreach(new \DirectoryIterator($site_root) as $file){
 
+			// if we find any directories that start with .wire-3 then return true
 			if($file->isDir() && substr($file->getFilename(), 0, 7) == '.wire-3'){
 				return true;
 			}
+
+			// also check for files beginning index-3 or htaccess-3.
+			if($file->isFile() && (substr($file->getFilename(), 0, 8) == 'index-3.' || substr($file->getFilename(), 0, 11) == 'htaccess-3.')){ 
+				return true;
+			}
+
 		}
 
 		return false;

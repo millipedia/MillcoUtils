@@ -139,6 +139,10 @@ You can pass an array of options to the function if you want to use specify diff
 If you enter a password in the Utils opions page then we'll pull in a holding page template. The default is a millco branded page we pull from the markup folder from this module, but if you have a file holding_page.php in the templates folder then we use that instead.
 
 The default holding page template has a form so that non-admin users can log in if they use the password you set previously. You can just use a holding page without that form if you don't need to make the site available to non-admin users.
+
+# Remove install files
+
+If we detect directories or files left over from core upgrades (eg .wire-3.0.xxx, htaccess-3.0.xxx) then we give an option to remove them on the Utils process page.
 	
 # Things it doesn't yet but will soon.	
 
