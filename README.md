@@ -1,10 +1,12 @@
 # MillcoUtils
 
-Very early (not really ready for public consumption) and very opinionated ProcessWire module that does a couple of useful things that I like to have across most sites.
+Very opinionated ProcessWire module that does useful things that I like to have across most sites. 
 
-One day it might have some more useful things.
+It is very much tied into the way we build sites so might not be super useful for you, but we use it on pretty much all the sites we build.
 
 I was spurred into action to put these things into a module by Bernhard's [RockFrontend](https://processwire.com/modules/rock-frontend/) module. That's a lot fancier than this is ever likely to be so go and check that out.
+
+stephen.
 
 # Things it does so far.
 
@@ -78,21 +80,23 @@ The function checks for a custom image field 'image_caption' and will wrap the p
 
 Alt text is pulled from either an 'image_alt' field or the img 'description' value.
 
-# Millco Utils Textformatter
+## Millco Utils Textformatter
 
 The module now also installs a TextFormatter. If you add this to a text field then it replaces inline images with a source set and tidies up some tags that TinyMCE puts in but shouldn't.
 
-# Analytics tag
+## Analytics
 
-You can include either a Cabin Analytics or Fathom Analytics tag (or hey, both if you want) by providing the necessary details in the module options.
+You can include either a Cabin Analytics or Fathom Analytics tag (or hey, both if you want) by providing the necessary details in the Analytics section on the utils page.
 
-# Ajax endpoints
+To add a link to your analytics dashboard to the admin menu, then first add the address of your dashboard page to the Public Dashboard field. Then create a page under the Admin parent with the name 'analytics' and set it to use the ProcessMillcoUtils process. That menu item will then just redirect to whatever you have in the Public Dashboard field.
+
+## Ajax endpoints
 
 Adding php files to an /ajax/ folder in your templates directory will automatically create URL hooks for them. e.g. adding a hello-world.php file will create a URL at yousite.com/ajax/hello-world  
 It's really simple and that's pretty much all it does. If you echo a JSON string in your ajax file then we use the PW url hook to return that, otherwise you'll need to deal with the response in your own file.
 Benhard's [RockFrontend](https://processwire.com/modules/rock-frontend/) module has much a fancier and more configurable version of this.
 
-# Load iframe in modal dialog
+## Load iframe in modal dialog
 
 Calling:
 
@@ -109,12 +113,42 @@ We don't include any CSS for the dialog by default (we have it in our skeleton C
 
 Again, there are a couple of separate modules that do this  eg. [AdminInModal](https://github.com/MetaTunes/AdminInModal) if you need something fancier.
 
+## Open Graph tags
 
+You can add the usual open graph tags by calling
+
+	$mu->open_graph_tags();
+
+By default this will generate summary, description and image tags from some standard fields we normally use that are named: summary / content / featured_image.
+The code also looks for default OG images in assets/images called 'og_landscape.png' and 'og_square.png'. 
+
+You can pass an array of options to the function if you want to use specify different fields or images, or if you want a particular page to always use the default images rather than one a user has uploaded. eg:
+
+	// include open graph tags
+	$og_options = [];
+	$og_options['site_name'] = 'Fancy new site';
+	$og_options['og_landscape_image'] = 'og_landscape.svg';
+	$og_options['og_square_image'] = 'og_square.svg';
+	if($page->template->name == 'home'){
+		$og_options['use_default_images'] = true;
+	}
+	echo $mu->open_graph_tags($og_options);
+
+# Holding page
+
+If you enter a password in the Utils opions page then we'll pull in a holding page template. The default is a millco branded page we pull from the markup folder from this module, but if you have a file holding_page.php in the templates folder then we use that instead.
+
+The default holding page template has a form so that non-admin users can log in if they use the password you set previously. You can just use a holding page without that form if you don't need to make the site available to non-admin users.
+
+# Remove install files
+
+If we detect directories or files left over from core upgrades (eg .wire-3.0.xxx, htaccess-3.0.xxx) then we give an option to remove them on the Utils process page.
+	
 # Things it doesn't yet but will soon.	
 
 - [ ] Configurable CSP
 - [ ] Automatic page reload that got mentioned in the PW forum.
-- [ ] Wire in our holding page maybe.
+- [x] Wire in our holding page maybe.
 
 
 stephen at [millipedia.com](https://millipedia.com)

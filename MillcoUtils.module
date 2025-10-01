@@ -50,13 +50,13 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 
 		// Let's add the readme to the config page tho.
 
-		$readme = $this->wire->files->render(__DIR__."/README.md");
+		$readme = $this->wire->files->render(__DIR__ . "/README.md");
 		$inputfields->add([
-		  'type' => 'markup',
-		  'label' => 'Readme',
-		  'icon' => 'life-ring',
-		  'collapsed' => Inputfield::collapsedYesAjax,
-		  'value' => $this->wire->sanitizer->entitiesMarkdown($readme, true),
+			'type' => 'markup',
+			'label' => 'Readme',
+			'icon' => 'life-ring',
+			'collapsed' => Inputfield::collapsedYesAjax,
+			'value' => $this->wire->sanitizer->entitiesMarkdown($readme, true),
 		]);
 
 		return $inputfields;
@@ -76,7 +76,9 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		'cabin' => '0',
 		'cabin_custom' => '',
 		'fathom' => '',
+		'holding_page' => '',
 		'analytics_in_dev' => '0',
+		'analytics_public_dashboard' => '',
 		'inline_image_path' => 'icons',
 		'load_admin_tweaks' => '0',
 		'load_admin_scripts' => '0'
@@ -123,9 +125,9 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		// add our ajax endpoints.
 		$this->ajaxAddEndpoints();
 
-		// Add admin tweak styles if the user has opted in.
 		$moduleConfig = $this->modules->getConfig('MillcoUtils');
 
+		// Add admin tweak styles if the user has opted in.
 		if (array_key_exists('load_admin_tweaks', $moduleConfig) && $moduleConfig['load_admin_tweaks']) {
 			$this->config->styles->add($this->config->urls->MillcoUtils . "css/admin_tweaks.css");
 		}
@@ -135,13 +137,61 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		if (array_key_exists('load_admin_scripts', $moduleConfig) && $moduleConfig['load_admin_scripts']) {
 			$this->config->scripts->add($this->config->urls->MillcoUtils . "lib/htmx/htmx.min.js");
 		}
-
 	}
 
 	//ready() method: This is called after ProcessWire is fully bootstrapped, and is about to start rendering a page. At this point, the entire API is available and ready for use. This method can be used when you depend on the current page being accessed, like changing or adding certain behaviors or settings based on the current page or user.
-	public function ready() {}
+	public function ready()
+	{
 
+		// This is where we check for a holding page.
+		// This can't go in init because the page isn't loaded yet.
 
+		if (wire('page')->template != 'admin') {		// we only want to do this on the frontend.
+
+			$moduleConfig = $this->modules->getConfig('MillcoUtils');
+
+			if (array_key_exists('holding_page', $moduleConfig) && $moduleConfig['holding_page'] != '') {
+
+				$allow_access = false;
+				$error_message = '';
+
+				// are we logged in?
+				if (wire('user')->isLoggedin() || wire('session')->loggedin) {
+					$allow_access = true;
+				} else {
+
+					// check for submitted password 
+					if (wire('input')->post->pass) {
+						$pass = \strtolower(wire('input')->post->pass);
+						if ($pass == $moduleConfig['holding_page']) {
+							wire('session')->loggedin = 1;
+							$allow_access = true;
+						} else {
+							wire('session')->login_error = 'Please check your Password';
+							$error_message = 'Please check your Password';
+						}
+					}
+				}
+
+				if (!$allow_access) { // don't allow access to the site and show the holding page.
+
+					// Do we have a file holding_page.php in the templates folder?
+					if (file_exists(wire('config')->paths->templates . 'holding_page.php')) {
+						$holding_page_file = wire('config')->paths->templates . 'holding_page.php';
+					} else {// Use our module version.
+						$holding_page_file = wire('config')->paths->siteModules . 'MillcoUtils/markup/holding_page.php';
+					}
+
+					include($holding_page_file);
+					exit(0);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Attach the nonce to the return value of Page::nonce.
+	 */
 	public function hook_nonce($event)
 	{
 		$event->return = $this->nonce;
@@ -180,7 +230,6 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 				// so you'll need to handle the response in your own file.
 				$response = wire('files')->render($file);
 				$event->return = $response;
-
 			});
 		}
 	}
@@ -285,11 +334,29 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 
 
 	/**
+	 * Add open graph tags
+	 * 
+	 * @param Array $options
+	 * @return String
+	 */
+
+	public function open_graph_tags($options = [])
+	{
+
+		$path = wire('config')->paths->siteModules . 'MillcoUtils/markup/open_graph_tags.php';
+
+		$open_graph_markup = wire('files')->render($path, ['options' => $options]);
+
+		return $open_graph_markup;
+	}
+
+	/**
 	 * load an icon inline from a file
 	 * @param String $filename
 	 * 
 	 * Takes the name of an svg file (without extension) and reads in the data 
-	 * from the file if it exists in /site/assets/images/icons
+	 * from the file if it exists in /site/assets/images/
+	 * You can set a subfolder in the utils admin settings to change the path.
 	 * tip: using currentColor in your SVG is very useful.
 	 */
 
@@ -299,7 +366,7 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		// We now have a config value for the base path relative to images
 		$inline_image_path = $this->inline_image_path;
 
-		$inline_image_path = str_replace('..', '', $inline_image_path); // let's not iterate up any more.
+		$inline_image_path = str_replace('..', '', $inline_image_path); // let's not allow iterating up the path.
 
 		// sort out directory separators in case our user has added them;
 		if ($inline_image_path !== '') {
@@ -319,13 +386,12 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 	 * 
 	 */
 
-	 public function icon($filename)
-	 {
- 
-		 $path = wire('config')->paths->siteModules . 'MillcoUtils/icons/';
-		 return $this->get_icon_markup($filename, $path);
+	public function icon($filename)
+	{
 
-	 }
+		$path = wire('config')->paths->siteModules . 'MillcoUtils/icons/';
+		return $this->get_icon_markup($filename, $path);
+	}
 
 	/**
 	 * get_icon_markup
@@ -335,7 +401,8 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 	 * @return String
 	 */
 
-	private function get_icon_markup($filename, $path) {
+	private function get_icon_markup($filename, $path)
+	{
 
 		// In case we've passed the filename with .svg on the end then remove it.
 		// I guess it could be the case we have an oddly named file but not as often
@@ -353,6 +420,12 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 			$icon_markup = $icon;
 			return $icon_markup;
 		} else {
+
+			// Dump to Tracy if it's installed.
+			if (function_exists('bd')) {
+				bd('missing icon: ' . $filename);
+			}
+
 			return '?';
 		}
 	}
@@ -376,16 +449,15 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		$modialog_markup = wire('files')->render($path, ['mu' => $this]);
 
 		return $modialog_markup;
-
 	}
 
 
 	/**
 	 * Source set
 	 * 
-	 * Takes an image and does some basic source setting.
+	 * Takes a Pageimage object and does some basic source setting.
 	 * 
-	 * @param Image image
+	 * @param Pageimage $image
 	 * @param Int widht
 	 * @param Int height
 	 * @param Array options
@@ -436,11 +508,11 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 			// options.
 			if ($image->img_alt) {
 				$alt = $image->img_alt;
-			}elseif($image->image_alt) {
+			} elseif ($image->image_alt) {
 				$alt = $image->image_alt;
-			}elseif ($image->text_field) {
+			} elseif ($image->text_field) {
 				$alt = $image->text_field;
-			}elseif ($image->description) {
+			} elseif ($image->description) {
 			} elseif ($image->image_alt) {
 				$alt = $image->image_alt;
 			} elseif ($image->description) {
@@ -458,7 +530,7 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 					$caption = $image->image_caption;
 				} elseif ($image->caption) {
 					$caption = $image->caption;
-				}elseif ($image->sub_content) {
+				} elseif ($image->sub_content) {
 					$caption = $image->sub_content;
 				}
 
@@ -496,7 +568,18 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 				$image_markup .= '<source media="(max-width: 480px)" srcset="' . $smol_pic->webp->url . '" type="image/webp">';
 			}
 
-			$image_markup .= '<img class="' . $classes . '" src="' . $thumb->url . '" alt="' . $alt . '" width="' . $thumb->width . '" height="' . $thumb->height . '" ' . $lazy . '>';
+			$image_tag_markup = '<img class="' . $classes . '" src="' . $thumb->url . '" alt="' . $alt . '" width="' . $thumb->width . '" height="' . $thumb->height . '" ' . $lazy . '>';
+
+
+			// just in case we want to return just the image tag without the picture tag.
+			// ... not really a source set then, but hey, I've just needed to do it.
+			if (isset($options['image_tag_only']) && $options['image_tag_only']) {
+				return $image_tag_markup;
+			} else {
+				$image_markup .= $image_tag_markup;
+			}
+
+
 			$image_markup .= '</picture>';
 
 			// let's only wrap in a figure now if we have a caption.

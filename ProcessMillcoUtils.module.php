@@ -46,6 +46,19 @@ class ProcessMillcoUtils extends Process implements Module
 	
 	public function ___execute()
 	{
+
+		// lets see if this a page called analytisc and if it then then redirect to the analytics page.
+		// we check this before we check if the user has permissions to edit the settings.
+		if (wire('page')->template == 'admin' && wire('page')->name == 'analytics') {
+
+			$moduleConfig = $this->modules->getConfig('MillcoUtils');
+			if(isset($moduleConfig['analytics_public_dashboard']) && $moduleConfig['analytics_public_dashboard'] != ''	){
+				wire()->session->redirect($moduleConfig['analytics_public_dashboard']);
+			}else{
+				return 'No public dashboard address set. Please add one in the Utils page.';
+			}
+		}
+
 		// We don't show the manage settings unless you have
 		// the millco-utils-manage permissions.
 		// TODO - we don't want to show this page at all if you don't have permissions....
@@ -54,7 +67,7 @@ class ProcessMillcoUtils extends Process implements Module
 			return 'You require additional permissions to edit these settings.';
 		}
 
-		if ($this->input->post('submit')) {
+			if ($this->input->post('submit')) {
 			$this->mu_save_settings($this->input->post);
 		}
 
@@ -65,8 +78,8 @@ class ProcessMillcoUtils extends Process implements Module
 
 		// Show info panel. Might be nice to be able to add to this. Or stick it in an expando box like the other sections.
 
-		$admin_page_markup .='<div class="uk-panel" style="margin:2rem 0; padding:2rem;background-color:#eee">';
-			$panel_info = wire('files')->render(wire('config')->paths->siteModules . 'MillcoUtils/panel_info.php');
+		$admin_page_markup .='<div class="uk-panel uk-background-muted uk-padding-small uk-margin-bottom">';
+			$panel_info = wire('files')->render(wire('config')->paths->siteModules . 'MillcoUtils/panel_info.php', ['moduleConfig' => $moduleConfig]);
 			$admin_page_markup .= $panel_info;
 		$admin_page_markup .= '</div>';
 
@@ -166,12 +179,23 @@ class ProcessMillcoUtils extends Process implements Module
 
 		/** @var InputfieldText $field */
 		$field = $this->modules->get('InputfieldText');
+		$field->label = 'Show holding page';
+		$field->description = '';
+		$field->notes = 'If you enter a password here then we will show a holding page to non-logged in users.';
+		$field->name = 'holding_page';
+		$field->value = $moduleConfig['holding_page'];
+		$field->columnWidth = 50;
+		$fieldset->add($field);
+		
+
+		/** @var InputfieldText $field */
+		$field = $this->modules->get('InputfieldText');
 		$field->label = 'Path to inline images';
 		$field->description = 'This is relative to the assets/images folder.';
 		$field->notes = 'This used to be a folder called \'icons\' so if you\'ve updated from a previous version of this module then check things are working as expected.';
 		$field->name = 'inline_image_path';
 		$field->value = $moduleConfig['inline_image_path'];
-		$field->columnWidth = 100;
+		$field->columnWidth = 50;
 		$fieldset->add($field);
 
 		/** @var InputfieldCheckbox $field */
@@ -256,7 +280,7 @@ class ProcessMillcoUtils extends Process implements Module
 		/** @var InputfieldCheckbox $field */
 		$field = $this->modules->get('InputfieldCheckbox');
 		$field->name = 'analytics_in_dev';
-		$field->label = 'Always include anlytics tag';
+		$field->label = 'Always include analytics tag';
 		$field->notes = 'By default we dont add tags if the site is in dev mode.';
 		$field->value = 1;
 		if ($moduleConfig['analytics_in_dev']) {
@@ -270,7 +294,7 @@ class ProcessMillcoUtils extends Process implements Module
 		$field = $this->modules->get('InputfieldText');
 		$field->name = 'fathom';
 		$field->label = 'Add a Fathom site code';
-		$field->notes = 'This will something like <em>GZRYZGYC</em>';
+		$field->notes = 'This will be something like GZRYZGYC<';
 		$field->value = $moduleConfig['fathom'];
 		$field->columnWidth = 75;
 		$fieldset->add($field);
@@ -297,8 +321,43 @@ class ProcessMillcoUtils extends Process implements Module
 		$field->columnWidth = 75;
 		$fieldset->add($field);
 
+
+		/** @var InputfieldText $field */
+		$field = $this->modules->get('InputfieldText');
+		$field->name = 'analytics_public_dashboard';
+		$field->label = 'Public dashboard address';
+		$field->value = $moduleConfig['analytics_public_dashboard'];
+		$field->notes = 'Link to your public dashboard on Cabin or Fathom. If you create an admin page called analytics that uses the millcoUtils process then we will use this to redirect you to your dashboard.';
+		$field->columnWidth = 100;
+		$fieldset->add($field);
+
 		$form->add($fieldset);
 
+
+		// ======  Remove old install files
+
+		if($this->install_files_detected()){
+
+			/** @var InputfieldFieldset $fieldset */
+			$fieldset = $this->modules->get('InputfieldFieldset');
+			$fieldset->label = 'Install Files Detected';
+			$fieldset->description = '';
+
+			$fieldset->collapsed = Inputfield::collapsedNo;
+		
+			/** @var InputfieldCheckbox $field */
+			$field = $this->modules->get('InputfieldCheckbox');
+			$field->name = 'remove_install_files';
+			$field->label = 'Remove install files';
+			$field->notes = 'We have detected that you have some install files in your site root. If these are not needed then they can be removed. Careful now.';
+			$field->value = 1;
+			$field->columnWidth = 100;
+			$fieldset->add($field);
+
+			$form->add($fieldset);
+
+		}
+	
 		/** @var InputfieldSubmit $button */
 		$button = $this->modules->get('InputfieldSubmit');
 		$button->value = 'Save';
@@ -332,20 +391,44 @@ class ProcessMillcoUtils extends Process implements Module
 		// loop through our possible config options
 		// and if we have posted value then update it.
 
+		$settings_updated = false;
+		$message_content='';
+
 		foreach($mu_config_defaults as $index => $value){
 
 			// if we have a posted value then update our value with that
 			// TODO should be sanitizing these really...
 			// I suspect I'm doing this in a slightly odd way.
 			 if(isset($post_data[$index])){
+
+				if($value != $post_data[$index]){
+					
 				$value=$post_data[$index];
+				$settings_updated = true;
+				}
+
+
 			 }
 
 			 $mu_config_data[$index]=$value;
 
 		}
 
-		$this->message('Settings saved'); // TODO check we have actually updated something.
+		if($settings_updated){
+			$message_content.='Settings saved.';
+		}else{
+			$message_content.='No settings updated.';
+		}
+
+		if(isset($post_data['remove_install_files'])){
+			if($this->remove_install_files()){
+				$message_content.=' Install files removed.';
+			}else{
+				$message_content.=' No install files removed.';
+			}
+		}
+
+		$this->message($message_content);
 
 		$this->modules->saveConfig('MillcoUtils', $mu_config_data);
 
@@ -353,6 +436,73 @@ class ProcessMillcoUtils extends Process implements Module
 		/** @var Wire $this */
 		$this->session->redirect('./');
 	}
+
+
+	/**
+	 * Check if we have any install files in the site root.
+	 * 
+	 * @return bool
+	 */
+	function install_files_detected(){
+
+		$site_root = wire('config')->paths->root;
+
+		// iterate through the root directory
+		foreach(new \DirectoryIterator($site_root) as $file){
+
+			// if we find any directories that start with .wire-3 then return true
+			if($file->isDir() && substr($file->getFilename(), 0, 7) == '.wire-3'){
+				return true;
+			}
+
+			// also check for files beginning index-3 or htaccess-3.
+			if($file->isFile() && (substr($file->getFilename(), 0, 8) == 'index-3.' || substr($file->getFilename(), 0, 11) == 'htaccess-3.')){ 
+				return true;
+			}
+
+		}
+
+		return false;
+	}
+
+	/**
+	 * Remove the install files from the site root.
+	 * 
+	 */
+	function remove_install_files(){
+
+		$files_removed = false;
+		$site_root = wire('config')->paths->root;
+		
+		foreach(new \DirectoryIterator($site_root) as $file){
+
+			if($file->isDir() && substr($file->getFilename(), 0, 7) == '.wire-3'){
+
+				if(wire('files')->rmdir($site_root . $file->getFilename(), true)){
+					$this->log("Removed directory: " . $file->getFilename());
+					$files_removed = true;
+				}else{	
+					$this->log("Failed to remove directory: " . $file->getFilename());
+				}
+			}
+
+			// also check for files beginning index-3 or htaccess-3.
+			if($file->isFile() && (substr($file->getFilename(), 0, 8) == 'index-3.' || substr($file->getFilename(), 0, 11) == 'htaccess-3.')){
+
+				if(unlink($site_root . $file->getFilename())){
+					$this->log("Removed file: " . $file->getFilename());
+					$files_removed = true;
+				}else{
+					$this->log("Failed to remove file: " . $file->getFilename());
+				}
+				
+			}
+
+		}
+
+		return $files_removed;
+	}
+
 
 
 }
