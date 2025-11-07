@@ -52,7 +52,7 @@
 			iframe.style.width = '100%';
 			iframe.style.minWidth = '1024px';
 			iframe.style.minHeight = '600px';
-			iframe.style.height = '80vh';
+			iframe.style.height = '100%';
 			iframe.style.border = 'none';
 			modialog_content.innerHTML = '';
 			modialog_content.appendChild(iframe);
