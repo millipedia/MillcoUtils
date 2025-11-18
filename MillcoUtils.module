@@ -635,7 +635,8 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 			$pass = array();
 			$tick = 0;
 
-			// generate a password
+			// Pick some words and add them to the array.
+			// Since you ask, I decided deliberately not check for duplicates here.
 			while ($tick < $no_of_words_in_passphrase) {
 				$index = mt_rand(0, $no_of_words);
 				$pass[] = trim($words[$index]);
