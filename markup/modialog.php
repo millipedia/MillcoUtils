@@ -73,24 +73,36 @@
 		});
 
 		// Add a listener to any links or buttons with an open_in_dialog class
-		document.querySelectorAll('.open_in_dialog').forEach(function(oid_button) {
-			
-			oid_button.addEventListener('click', function(e) {
-
-				e.preventDefault();
-
-				if(oid_button.dataset.reload == 'false'){
-					window.modialog_needs_reload = false;
-				}else{
-					window.modialog_needs_reload = true;
-				}
+		function bindOIDs() {
+			document.querySelectorAll('.open_in_dialog').forEach(function(oid_button) {
 				
-				// not sure we should explicitly add the modal=1 here.
-				modialog_iframe(oid_button.href + '&modal=1');
+				oid_button.addEventListener('click', function(e) {
+
+					e.preventDefault();
+
+					if(oid_button.dataset.reload == 'false'){
+						window.modialog_needs_reload = false;
+					}else{
+						window.modialog_needs_reload = true;
+					}
+					
+					// not sure we should explicitly add the modal=1 here.
+					modialog_iframe(oid_button.href + '&modal=1');
+
+				});
 
 			});
+		}
 
+		// add a listener so that if we need to we can rebind the open in dialog buttons.
+		// in particular if we've passed back some html from HMTX we can rebind the events 
+		// using a HX-Trigger-After-Swap header in our response:
+		// header('HX-Trigger-After-Swap: bindOIDs');
+		document.body.addEventListener('bindOIDs', function() {
+			bindOIDs();
 		});
+
+		bindOIDs();
 
 	});
 </script>
