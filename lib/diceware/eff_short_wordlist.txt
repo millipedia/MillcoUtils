@@ -41,7 +41,7 @@ arena
 argue
 arise
 armed
-armor
+armour
 army
 aroma
 array
@@ -748,8 +748,6 @@ pager
 palm
 panda
 panic
-pants
-panty
 paper
 park
 party
@@ -774,7 +772,7 @@ plant
 plaza
 plead
 plot
-plow
+plough
 pluck
 plug
 plus
@@ -1209,7 +1207,7 @@ user
 usher
 utter
 value
-vapor
+vapour
 vegan
 venue
 verse

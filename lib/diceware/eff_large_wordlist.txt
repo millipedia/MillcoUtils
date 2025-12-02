@@ -1836,7 +1836,7 @@ discard
 discern
 discharge
 disclose
-discolor
+discolour
 discount
 discourse
 discover
@@ -2511,11 +2511,11 @@ faster
 fasting
 fastness
 faucet
-favorable
-favorably
-favored
-favoring
-favorite
+favourable
+favourably
+favoured
+favouring
+favourite
 fax
 feast
 federal
@@ -2624,9 +2624,9 @@ flattery
 flattop
 flatware
 flatworm
-flavored
-flavorful
-flavoring
+flavoured
+flavourful
+flavouring
 flaxseed
 fled
 fleshed
@@ -3277,9 +3277,9 @@ humility
 humming
 hummus
 humongous
-humorist
-humorless
-humorous
+humourist
+humourless
+humourous
 humpback
 humped
 humvee
@@ -4684,7 +4684,7 @@ pliable
 plod
 plop
 plot
-plow
+plough
 ploy
 pluck
 plug
@@ -5145,7 +5145,7 @@ reclusive
 recognize
 recoil
 recollect
-recolor
+recolour
 reconcile
 reconfirm
 reconvene
@@ -6129,7 +6129,7 @@ snowflake
 snowiness
 snowless
 snowman
-snowplow
+snowplough
 snowshoe
 snowstorm
 snowsuit
@@ -6867,7 +6867,7 @@ tricking
 trickle
 trickster
 tricky
-tricolor
+tricolour
 tricycle
 trident
 tried
@@ -7020,7 +7020,7 @@ unclog
 unclothed
 uncoated
 uncoiled
-uncolored
+uncoloured
 uncombed
 uncommon
 uncooked

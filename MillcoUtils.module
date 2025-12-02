@@ -605,10 +605,10 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 	public function reasonable_password($required_entries = 1, $options = array())
 	{
 
-		if(isset($options['wordlist']) && $options['wordlist'] == 'long'){
-			$wordlist = 'eff_large_wordlist.txt';
-		}else{
+		if(isset($options['wordlist']) && $options['wordlist'] == 'short'){
 			$wordlist = 'eff_short_wordlist.txt';
+		}else{
+			$wordlist = 'eff_large_wordlist.txt';
 		}
 
 		if(isset($options['separator'])){

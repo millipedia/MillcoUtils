@@ -150,9 +150,9 @@ You can generate a password that matches the default PW password requirements us
 
 	$mu->reasonable_password();
 
-By default it uses the EFF short word list to generate a passphrase with 5 words. The function can take a value for number of passwords required and options to use the long word list, a different number of words (min 2, max 20) and a diferent separator:
+By default it uses the EFF long word list (editted slightly to remove a few American spellings) to generate a passphrase with 5 words. The function can take a value for number of passwords required and options to use the long word list, a different number of words (min 2, max 20) and a diferent separator:
 
-	$mu->ressonable_password(10,['length'=>10,'separator'=>'_','wordlist'=>'large']);
+	$mu->ressonable_password(10,['length'=>10,'separator'=>'_','wordlist'=>'short']);
 
 If the number of passwords requested is more than one then it returns an array of passwords instead of a single string.
 
