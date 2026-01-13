@@ -18,7 +18,6 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 	public $nonce = ''; // a page nonce we set for use in inline scripts etc
 	public $mu_settings; // some sitewide settings.
 
-
 	public static function getModuleInfo()
 	{
 		return [
@@ -122,8 +121,52 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		// add our analytics tag
 		$this->addHookAfter('Page::render', $this, 'analytics_tags');
 
-		// add our ajax endpoints.
+		// add our dynamic ajax endpoints.
 		$this->ajaxAddEndpoints();
+
+		// add a hook for updating a field.
+		// I ass-u-me this is always going to be used via htmx.
+		// and the markup is in the edit_field_markup method.
+		wire()->addHook('/millcoutils/update_field/{page_id}/{field_name}', function ($event) {
+
+			if(!wire('user')->hasPermission('millco-utils-manage')){
+				echo 'You do not have permission to update fields.';
+				die();
+			}
+
+			$page_id=$event->arguments('page_id');
+			$field_name=$event->arguments('field_name');	
+			$field_value=wire('input')->post('mu_ef_value');
+
+			// get this page.
+			$page_to_update=wire('pages')->get($page_id);
+			if(!$page_to_update){
+				echo 'Page not found.';
+				die();
+			}
+
+			// does this field exist on this page?
+			if(!$page_to_update->hasField($field_name)){
+				echo 'Field not found.';
+				die();
+			}
+
+			// TODO: can we validate the field value from the fieldtype?
+			
+			// set the field value.
+			$page_to_update->of(false);
+				$page_to_update->{$field_name}=$field_value;
+				$page_to_update->save();
+			$page_to_update->of(true);
+
+			// use the formatted field_value to rebuild the markup.
+			$formatted_field_value=$page_to_update->{$field_name};
+			$response=$this->edit_field_markup($field_name, $formatted_field_value, $page_id);
+
+			echo $response;
+			die();
+
+		});
 
 		$moduleConfig = $this->modules->getConfig('MillcoUtils');
 
@@ -269,6 +312,35 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 				$event->return = $updated;
 			}
 		}
+	}
+
+	/**
+	 * write out a markup for an input field that will update a field on the page via htmx.
+	 * @param String $field_name
+	 * @param String $field_value
+	 * @param Int $page_id
+	 * @return String
+	 */
+
+	public function edit_field_markup($field_name, $field_value, $page_id=0){
+
+		if(!$page_id){
+			$page_id=wire('page')->id;
+		}
+
+		// At the moment we're only supporting text fields.
+		// I think we should be able do something fancier with numbers etc.
+		$markup='<input id="mu_ef_' . $field_name . '_' . $page_id . '" 
+		name="mu_ef_value" 
+		type="text" 
+		class="hx_text" ';
+		$markup.='hx-post="/millcoutils/update_field/' . $page_id . '/' . $field_name . '" 
+		hx-swap="outerHTML" 
+		hx-trigger="change"
+		value="' . $field_value . '">';
+
+		return $markup;
+
 	}
 
 
