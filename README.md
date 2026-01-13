@@ -113,6 +113,10 @@ We don't include any CSS for the dialog by default (we have it in our skeleton C
 
 Again, there are a couple of separate modules that do this  eg. [AdminInModal](https://github.com/MetaTunes/AdminInModal) if you need something fancier.
 
+## Truncate logs
+
+You can set options to prune a log to a given number of days 
+
 ## Open Graph tags
 
 You can add the usual open graph tags by calling

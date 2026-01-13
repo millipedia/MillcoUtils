@@ -210,7 +210,6 @@ class ProcessMillcoUtils extends Process implements Module
 		}
 		$fieldset->add($field);
 
-
 		/** @var InputfieldCheckbox $field */
 		$field = $this->modules->get('InputfieldCheckbox');
 		$field->name = 'load_admin_scripts';
@@ -224,6 +223,36 @@ class ProcessMillcoUtils extends Process implements Module
 		$fieldset->add($field);
 		
 		$form->add($fieldset);
+
+		// ======  Log options
+
+		/** @var InputfieldFieldset $fieldset */
+		$fieldset = $this->modules->get('InputfieldFieldset');
+		$fieldset->label = 'Log options';
+		$fieldset->description = 'Set log options.';
+		$fieldset->notes = '';
+		$fieldset->collapsed = Inputfield::collapsedYes;
+
+		/** @var InputfieldCheckbox $field */
+		$field = $this->modules->get('InputfieldText');
+		$field->name = 'logs_prune';
+		$field->label = 'Prune logs';
+		$field->description = 'Prune logs older than this many days.';
+		$field->value = $moduleConfig['logs_prune'];
+		$field->columnWidth = 50;
+		$fieldset->add($field);
+
+		/** @var InputfieldCheckbox $field */
+		$field = $this->modules->get('InputfieldCheckbox');
+		$field->name = 'logs_prune';
+		$field->label = 'Suspciously large logs';
+		$field->description = 'Prune logs that are larger than 5mb megabytes.';
+		$field->value = $moduleConfig['logs_prune_size'];
+		$field->columnWidth = 50;
+		$fieldset->add($field);
+		
+		$form->add($fieldset);
+
 
 		// ======  Social media links
 
