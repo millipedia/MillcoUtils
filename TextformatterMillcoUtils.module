@@ -29,10 +29,30 @@ class TextformatterMillcoUtils extends Textformatter {
 	 * @param string $value
 	 */
 	public function formatValue(Page $page, Field $field, &$value) {
+
+		// bail out early if this is an admin page.
+		if(wire('page')->template == 'admin') return;
+
+		// We now have an option in the backend to specify text formatter replacements
+		// but I'm leaving these old ones in cos hey, I don't think we'll ever want them.
 	
 		// Replace <br /> with <br> tags 
-
 		$value = str_replace('<br />','<br>', $value);
+
+		// Remove the MsoNormal class from the content.
+		$value = str_replace(' class="MsoNormal"','', $value);
+
+		// Replace any text formatter replacements.
+		$text_formatter_replacements = $this->wire->modules->getConfig('MillcoUtils')['text_formatter_replacements'];
+		if($text_formatter_replacements){
+			$replacements = explode("\n", $text_formatter_replacements);
+			foreach($replacements as $replacement){
+				$replacement_values = explode(",", $replacement);
+				if(count($replacement_values) == 2){
+					$value = str_replace($replacement_values[0], $replacement_values[1], $value);
+				}
+				}
+		}
 
 		// TODO: this should be an option.
 

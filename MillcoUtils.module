@@ -82,7 +82,8 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		'analytics_public_dashboard' => '',
 		'inline_image_path' => 'icons',
 		'load_admin_tweaks' => '0',
-		'load_admin_scripts' => '0'
+		'load_admin_scripts' => '0',
+		'text_formatter_replacements' => ''
 
 	);
 

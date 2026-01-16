@@ -221,6 +221,16 @@ class ProcessMillcoUtils extends Process implements Module
 			$field->checked(true);
 		}
 		$fieldset->add($field);
+
+		/** @var InputfieldText $field */
+		$field = $this->modules->get('InputfieldTextArea');
+		$field->label = 'Text formatter replacements';
+		$field->description = '';
+		$field->notes = 'Enter a comma separated list of text formatter replacements to apply.';
+		$field->name = 'text_formatter_replacements';
+		$field->value = $moduleConfig['text_formatter_replacements'];
+		$field->columnWidth = 50;
+		$fieldset->add($field);
 		
 		$form->add($fieldset);
 
