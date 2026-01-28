@@ -17,6 +17,7 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 
 	public $nonce = ''; // a page nonce we set for use in inline scripts etc
 	public $mu_settings; // some sitewide settings.
+	public $variables = []; // a list of variables we can use in the templates.
 
 	public static function getModuleInfo()
 	{
@@ -78,6 +79,7 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		'logs_prune' => '0',
 		'logs_prune_size' => '0',
 		'holding_page' => '',
+		'millco_variables' => '',
 		'analytics_in_dev' => '0',
 		'analytics_public_dashboard' => '',
 		'inline_image_path' => 'icons',
@@ -216,6 +218,26 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 				// increaing the size of our own MillcoUtils log file.
 			});
 		}
+
+		// if we have any millco_variables then parse them and add them to the $this->variables array.
+		if (array_key_exists('millco_variables', $moduleConfig) && $moduleConfig['millco_variables'] != '') {
+
+			$variables_string = explode("\n", $moduleConfig['millco_variables']);
+
+			// lets put it in json format first and then decode it.
+			$variables_json = '{"variables":{' . implode(",", $variables_string) . '}}';
+
+			$variables_array = json_decode($variables_json, true);
+
+			if($variables_array && isset($variables_array['variables'])){
+				foreach ($variables_array['variables'] as $key=>$value) {
+					$this->variables[$key] = $value;
+				}
+			}else{
+				wire('log')->save('MillcoUtils', "Error parsing millco_variables config field.");
+			}
+		}
+
 	}
 
 	//ready() method: This is called after ProcessWire is fully bootstrapped, and is about to start rendering a page. At this point, the entire API is available and ready for use. This method can be used when you depend on the current page being accessed, like changing or adding certain behaviors or settings based on the current page or user.

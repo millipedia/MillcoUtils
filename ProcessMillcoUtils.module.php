@@ -47,7 +47,7 @@ class ProcessMillcoUtils extends Process implements Module
 	public function ___execute()
 	{
 
-		// lets see if this a page called analytisc and if it then then redirect to the analytics page.
+		// lets see if this a page called analytics and if it then then redirect to the analytics page.
 		// we check this before we check if the user has permissions to edit the settings.
 		if (wire('page')->template == 'admin' && wire('page')->name == 'analytics') {
 
@@ -72,7 +72,6 @@ class ProcessMillcoUtils extends Process implements Module
 		}
 
 		$admin_page_markup = '';
-
 
 		$moduleConfig = $this->modules->getConfig('MillcoUtils');
 
@@ -231,6 +230,16 @@ class ProcessMillcoUtils extends Process implements Module
 		$field->value = $moduleConfig['text_formatter_replacements'];
 		$field->columnWidth = 50;
 		$fieldset->add($field);
+
+		/** @var InputfieldText $field */
+		$field = $this->modules->get('InputfieldTextArea');
+		$field->label = 'Variables';
+		$field->description = '';
+		$field->notes = 'Enter key value pairs eg. "restaurant" : "Alice\\\'s", one per line. They should be valid JSON format so you\'ll need to escape characters like quotes and forward slashes.';
+		$field->name = 'millco_variables';
+		$field->value = $moduleConfig['millco_variables'];
+		$field->columnWidth = 50;
+		$fieldset->add($field);
 		
 		$form->add($fieldset);
 
@@ -265,47 +274,48 @@ class ProcessMillcoUtils extends Process implements Module
 
 
 		// ======  Social media links
+		// These are deprecated now.
 
-		/** @var InputfieldFieldset $fieldset */
-		$fieldset = $this->modules->get('InputfieldFieldset');
-		$fieldset->label = 'Social media';
-		$fieldset->description = 'Enter your social media user names.';
-		$fieldset->notes = 'We don\'t do anything with these values but they\'re there if you want them.';
-		$fieldset->collapsed = Inputfield::collapsedYes;
+		// /** @var InputfieldFieldset $fieldset */
+		// $fieldset = $this->modules->get('InputfieldFieldset');
+		// $fieldset->label = 'Social media';
+		// $fieldset->description = 'Enter your social media user names.';
+		// $fieldset->notes = 'We don\'t do anything with these values but they\'re there if you want them.';
+		// $fieldset->collapsed = Inputfield::collapsedYes;
 	
-		/** @var InputfieldText $field */
-		$field = $this->modules->get('InputfieldText');
-		$field->name = 'bluesky';
-		$field->label = 'Bluesky';
-		$field->value = $moduleConfig['bluesky'];
-		$field->columnWidth = 25;
-		$fieldset->add($field);
+		// /** @var InputfieldText $field */
+		// $field = $this->modules->get('InputfieldText');
+		// $field->name = 'bluesky';
+		// $field->label = 'Bluesky';
+		// $field->value = $moduleConfig['bluesky'];
+		// $field->columnWidth = 25;
+		// $fieldset->add($field);
 
-		/** @var InputfieldText $field */
-		$field = $this->modules->get('InputfieldText');
-		$field->name = 'youtube';
-		$field->label = 'Youtube';
-		$field->value = $moduleConfig['youtube'];
-		$field->columnWidth = 25;
-		$fieldset->add($field);
+		// /** @var InputfieldText $field */
+		// $field = $this->modules->get('InputfieldText');
+		// $field->name = 'youtube';
+		// $field->label = 'Youtube';
+		// $field->value = $moduleConfig['youtube'];
+		// $field->columnWidth = 25;
+		// $fieldset->add($field);
 
-		/** @var InputfieldText $field */
-		$field = $this->modules->get('InputfieldText');
-		$field->name = 'facebook';
-		$field->label = 'Facebook';
-		$field->value = $moduleConfig['facebook'];
-		$field->columnWidth = 25;
-		$fieldset->add($field);
+		// /** @var InputfieldText $field */
+		// $field = $this->modules->get('InputfieldText');
+		// $field->name = 'facebook';
+		// $field->label = 'Facebook';
+		// $field->value = $moduleConfig['facebook'];
+		// $field->columnWidth = 25;
+		// $fieldset->add($field);
 
-		/** @var InputfieldText $field */
-		$field = $this->modules->get('InputfieldText');
-		$field->name = 'instagram';
-		$field->label = 'Instagram';
-		$field->value = $moduleConfig['instagram'];
-		$field->columnWidth = 25;
-		$fieldset->add($field);
+		// /** @var InputfieldText $field */
+		// $field = $this->modules->get('InputfieldText');
+		// $field->name = 'instagram';
+		// $field->label = 'Instagram';
+		// $field->value = $moduleConfig['instagram'];
+		// $field->columnWidth = 25;
+		// $fieldset->add($field);
 
-		$form->add($fieldset);
+		// $form->add($fieldset);
 
 		// ====== Analytics options
 
