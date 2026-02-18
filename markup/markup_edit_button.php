@@ -120,6 +120,7 @@ if ($moduleConfig->eb_vertical) {
 
 	echo '<a href="' . $page->editURL . '" class="no_external_link">' . mu_editbar_icon('edit') . 'Edit</a>';
 	echo '<a href="' . $urls->admin . 'page" class="no_external_link">' . mu_editbar_icon('pages') . 'Pages</a>';
+	echo '<a href="' . $urls->admin . 'page/add/?parent_id=' . $page->id . '" class="no_external_link">' . mu_editbar_icon('add') . 'Add</a>';
 
 	// additional buttons
 	if ($moduleConfig->extra_buttons) {
