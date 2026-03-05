@@ -116,8 +116,8 @@ if($page->{$open_graph_image_field} && !$use_default_images){
 		$og_landscape_image_path=wire('config')->urls->assets . 'images/' . $og_landscape_image;
 
 		echo '<meta property="og:image" content="'.$og_landscape_image_path.'">' . PHP_EOL;
-		echo '<meta property="og:image:width" content="1200" />' . PHP_EOL;
-		echo '<meta property="og:image:height" content="630" />' . PHP_EOL;
+		echo '<meta property="og:image:width" content="1200">' . PHP_EOL;
+		echo '<meta property="og:image:height" content="630">' . PHP_EOL;
 	}	
 
 	if(file_exists($og_square_image_path)){
@@ -126,8 +126,8 @@ if($page->{$open_graph_image_field} && !$use_default_images){
 		$og_square_image_path=wire('config')->urls->assets . 'images/' . $og_square_image;
 
 		echo '<meta property="og:image" content="'.$og_square_image_path.'">' . PHP_EOL;
-		echo '<meta property="og:image:width" content="1200" />' . PHP_EOL;
-		echo '<meta property="og:image:height" content="1200" />' . PHP_EOL;
+		echo '<meta property="og:image:width" content="1200">' . PHP_EOL;
+		echo '<meta property="og:image:height" content="1200">' . PHP_EOL;
 	}
 }
 
