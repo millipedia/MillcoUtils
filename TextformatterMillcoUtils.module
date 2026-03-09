@@ -33,11 +33,16 @@ class TextformatterMillcoUtils extends Textformatter {
 		// bail out early if this is an admin page.
 		if(wire('page')->template == 'admin') return;
 
+		// TODO: should make most of these formatting options configurable.
+
 		// We now have an option in the backend to specify text formatter replacements
-		// but I'm leaving these old ones in cos hey, I don't think we'll ever want them.
+		// but I'm leaving these old ones in cos hey, I don't think we'll ever not want them.
 	
 		// Replace <br /> with <br> tags 
 		$value = str_replace('<br />','<br>', $value);
+
+		// and <hr /> with <hr> tags 
+		$value = str_replace('<hr />','<hr>', $value);
 
 		// Remove the MsoNormal class from the content.
 		$value = str_replace(' class="MsoNormal"','', $value);
@@ -54,7 +59,12 @@ class TextformatterMillcoUtils extends Textformatter {
 				}
 		}
 
-		// TODO: this should be an option.
+		// Wrap tables in a div with class table-wrapper
+		if(preg_match_all('#<table[^>]*>.*?<\/table>#s', $value, $matches)){
+			foreach($matches[0] as $key => $line) {
+				$value = str_replace($line, "<div class='table_wrapper'>$line</div>", $value);
+			}
+		}
 
 		// Replace inline images with sourcesets.
 		// lifted from Robin's Process Images module.
