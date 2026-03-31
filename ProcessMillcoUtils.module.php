@@ -376,7 +376,7 @@ class ProcessMillcoUtils extends Process implements Module
 		$field->name = 'analytics_public_dashboard';
 		$field->label = 'Public dashboard address';
 		$field->value = $moduleConfig['analytics_public_dashboard'];
-		$field->notes = 'Link to your public dashboard on Cabin or Fathom. If you create an admin page called analytics that uses the millcoUtils process then we will use this to redirect you to your dashboard.';
+		$field->notes = 'Redirect link to your public dashboard. If you create an admin page called analytics that uses the millcoUtils process then we will use this to redirect you to your dashboard.';
 		$field->columnWidth = 100;
 		$fieldset->add($field);
 
