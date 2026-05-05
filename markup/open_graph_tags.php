@@ -6,14 +6,18 @@
  * 
  */
 
+ /** @var Page $page */
+ /** @var Pages $pages */
+ /** @var Sanitizer $sanitizer */
+ /** @var array $options */
+
 
 // Site name
 if(isset($options['site_name'])){
 	$site_name=$options['site_name'];
 }else{
-	$site_name=$pages->get('/')->title; // use the site name from the home page if we've not set it.
+	$site_name=wire()->pages->get('/')->title; // use the site name from the home page if we've not set it.
 }
-
 
 // Page title
 if(isset($options['page_title'])){
@@ -40,20 +44,28 @@ if($page->{$summary_field_name}){
 // Truncate string to closest sentence within 165 characters
 $desc = $sanitizer->truncate($desc, 165, 'sentence');
 
+// Locale
+$locale='en_GB';
+if(isset($options['locale'])){
+	$locale=$options['locale'];
+}
+
+
 // NB. ProCache removes the quotes from the following metatags
 // so they should NOT end with a slash for closing the tag. Who knew?
 echo '<meta name="description" content="'.$desc.'">' . PHP_EOL;
 echo '<meta property="og:type" content="website">' . PHP_EOL;
 echo '<meta property="og:title" content="'.$millco_title.'">' . PHP_EOL;
+echo '<meta property="og:locale" content="'.$locale.'">' . PHP_EOL;
 echo '<meta property="og:description" content="'.$desc.'">' . PHP_EOL;
 echo '<meta property="og:url" content="' . $page->httpUrl . '">' . PHP_EOL;
 echo '<meta property="og:site_name" content="'.$site_name.'">' . PHP_EOL;
 
 
 // Open Graph image
-
 $open_graph_image_field='featured_image'; // default field name for the image
 
+// Have we been passed a specific image field?
 if(isset($options['image_field'])){
 	$open_graph_image_field=$options['image_field'];
 }
@@ -90,6 +102,11 @@ if($page->{$open_graph_image_field} && !$use_default_images){
 	echo '<meta property="og:image" content="'.$og_square_image->httpUrl.'">' . PHP_EOL;
 	echo '<meta property="og:image:width" content="1200">' . PHP_EOL;
 	echo '<meta property="og:image:height" content="1200">' . PHP_EOL;
+
+	// We generally use a title field for image alt text.
+	if($og_landscape_image->title){
+		echo '<meta property="og:image:alt" content="'.$og_landscape_image->title.'">' . PHP_EOL;
+	}
 
 
 }else{
@@ -130,28 +147,3 @@ if($page->{$open_graph_image_field} && !$use_default_images){
 		echo '<meta property="og:image:height" content="1200">' . PHP_EOL;
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// <meta property="og:image" content="https://www.example.com/images/image-landscape.jpg" />
-// <meta property="og:image:width" content="1200" />
-// <meta property="og:image:height" content="630" />
-// <meta property="og:image" content="https://www.example.com/images/image-square.jpg" />
-// <meta property="og:image:width" content="1200" />
-// <meta property="og:image:height" content="1200" />
-
-
-
-
