@@ -59,7 +59,7 @@ class TextformatterMillcoUtils extends Textformatter {
 				}
 		}
 
-		// Wrap tables in a div with class table-wrapper
+		// Wrap tables in a div with class table_wrapper
 		if(preg_match_all('#<table[^>]*>.*?<\/table>#s', $value, $matches)){
 			foreach($matches[0] as $key => $line) {
 				$value = str_replace($line, "<div class='table_wrapper'>$line</div>", $value);
