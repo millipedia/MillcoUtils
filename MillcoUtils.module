@@ -337,6 +337,18 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 
 
 	/**
+	 * Add CSP markup to the page.
+	 * This is a simple starting point.
+	 * Soon we'll do something more dynamic and configurable (honest).
+	 */
+	public function csp_markup()
+	{
+		$path = wire('config')->paths->siteModules . 'MillcoUtils/markup/csp.php';
+		$csp_markup = wire('files')->render($path, ['mu' => $this]);
+		return $csp_markup;
+	}
+
+	/**
 	 * modify the return value of Page::render() to add our edit toolbar markup. 
 	 * 
 	 */
