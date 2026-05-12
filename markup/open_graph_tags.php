@@ -124,13 +124,16 @@ if($page->{$open_graph_image_field} && !$use_default_images){
 		$og_square_image=$options['og_square_image'];
 	}
 
-	$og_landscape_image_path=wire('config')->paths->assets . 'images/' . $og_landscape_image;
-	$og_square_image_path=wire('config')->paths->assets . 'images/' . $og_square_image;
+	$og_landscape_image_path = wire('config')->paths->assets . 'images/' . $og_landscape_image;
+	$og_square_image_path = wire('config')->paths->assets . 'images/' . $og_square_image;
+	$assets_http_url = (wire('config')->https ? 'https://' : 'http://')
+		. wire('config')->httpHost
+		. wire('config')->urls->assets;
 
 	if(file_exists($og_landscape_image_path)){
 
-		// just need the relative path to the image
-		$og_landscape_image_path=wire('config')->urls->assets . 'images/' . $og_landscape_image;
+		// we need the full URL for the image
+		$og_landscape_image_path = $assets_http_url . 'images/' . $og_landscape_image;
 
 		echo '<meta property="og:image" content="'.$og_landscape_image_path.'">' . PHP_EOL;
 		echo '<meta property="og:image:width" content="1200">' . PHP_EOL;
@@ -139,8 +142,8 @@ if($page->{$open_graph_image_field} && !$use_default_images){
 
 	if(file_exists($og_square_image_path)){
 
-		// just need the relative path to the image
-		$og_square_image_path=wire('config')->urls->assets . 'images/' . $og_square_image;
+		// we need the full URL for the image
+		$og_square_image_path = $assets_http_url . 'images/' . $og_square_image;
 
 		echo '<meta property="og:image" content="'.$og_square_image_path.'">' . PHP_EOL;
 		echo '<meta property="og:image:width" content="1200">' . PHP_EOL;
