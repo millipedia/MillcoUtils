@@ -262,15 +262,27 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 				} else {
 
 					// check for submitted password 
-					if (wire('input')->post->pass) {
-						$pass = \strtolower(wire('input')->post->pass);
-						if ($pass == $moduleConfig['holding_page']) {
-							wire('session')->loggedin = 1;
-							$allow_access = true;
-						} else {
-							wire('session')->login_error = 'Please check your Password';
-							$error_message = 'Please check your Password';
-						}
+					// we now check for a get paramater that is either 'pass' or 'preview'.
+
+					$pass = "";
+					if (wire('input')->get->preview) {
+						$pass = wire('input')->get->preview;
+					} elseif (wire('input')->get->pass) {
+						$pass = wire('input')->get->pass;
+					}elseif(wire('input')->post->pass) {
+						$pass = wire('input')->post->pass;
+					}
+
+					if ($pass != "") {
+						$pass = \strtolower($pass);
+					}
+					
+					if ($pass == $moduleConfig['holding_page']) {
+						wire('session')->loggedin = 1;
+						$allow_access = true;
+					} else {
+						wire('session')->login_error = 'Please check your Password';
+						$error_message = 'Please check your Password';
 					}
 				}
 
