@@ -134,43 +134,42 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		// and the markup is in the edit_field_markup method.
 		wire()->addHook('/millcoutils/update_field/{page_id}/{field_name}', function ($event) {
 
-			if(!wire('user')->hasPermission('millco-utils-manage')){
+			if (!wire('user')->hasPermission('millco-utils-manage')) {
 				echo 'You do not have permission to update fields.';
 				die();
 			}
 
-			$page_id=$event->arguments('page_id');
-			$field_name=$event->arguments('field_name');	
-			$field_value=wire('input')->post('mu_ef_value');
+			$page_id = $event->arguments('page_id');
+			$field_name = $event->arguments('field_name');
+			$field_value = wire('input')->post('mu_ef_value');
 
 			// get this page.
-			$page_to_update=wire('pages')->get($page_id);
-			if(!$page_to_update){
+			$page_to_update = wire('pages')->get($page_id);
+			if (!$page_to_update) {
 				echo 'Page not found.';
 				die();
 			}
 
 			// does this field exist on this page?
-			if(!$page_to_update->hasField($field_name)){
+			if (!$page_to_update->hasField($field_name)) {
 				echo 'Field not found.';
 				die();
 			}
 
 			// TODO: can we validate the field value from the fieldtype?
-			
+
 			// set the field value.
 			$page_to_update->of(false);
-				$page_to_update->{$field_name}=$field_value;
-				$page_to_update->save();
+			$page_to_update->{$field_name} = $field_value;
+			$page_to_update->save();
 			$page_to_update->of(true);
 
 			// use the formatted field_value to rebuild the markup.
-			$formatted_field_value=$page_to_update->{$field_name};
-			$response=$this->edit_field_markup($field_name, $formatted_field_value, $page_id);
+			$formatted_field_value = $page_to_update->{$field_name};
+			$response = $this->edit_field_markup($field_name, $formatted_field_value, $page_id);
 
 			echo $response;
 			die();
-
 		});
 
 		$moduleConfig = $this->modules->getConfig('MillcoUtils');
@@ -204,7 +203,7 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		// add a hook to prune logs by size if the user has opted in.
 		if (array_key_exists('logs_prune_size', $moduleConfig) && $moduleConfig['logs_prune_size']) {
 
-			$this->addHook('WireLog::save', function (HookEvent $event	) use ($moduleConfig) {
+			$this->addHook('WireLog::save', function (HookEvent $event) use ($moduleConfig) {
 
 				// Do not prune the MillcoUtils log file otherwise we'll end up in a loop.
 				if ($event->arguments[0] == 'MillcoUtils') {
@@ -213,7 +212,7 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 
 				// Prune logs that are larger than 5Mb
 				wire('log')->pruneBytes($event->arguments[0], 5 * 1024 * 1024); // 5mb
-				
+
 				// we don't log this because if we have a runaway log then we'll just end up
 				// increaing the size of our own MillcoUtils log file.
 			});
@@ -229,15 +228,14 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 
 			$variables_array = json_decode($variables_json, true);
 
-			if($variables_array && isset($variables_array['variables'])){
-				foreach ($variables_array['variables'] as $key=>$value) {
+			if ($variables_array && isset($variables_array['variables'])) {
+				foreach ($variables_array['variables'] as $key => $value) {
 					$this->variables[$key] = $value;
 				}
-			}else{
+			} else {
 				wire('log')->save('MillcoUtils', "Error parsing millco_variables config field.");
 			}
 		}
-
 	}
 
 	//ready() method: This is called after ProcessWire is fully bootstrapped, and is about to start rendering a page. At this point, the entire API is available and ready for use. This method can be used when you depend on the current page being accessed, like changing or adding certain behaviors or settings based on the current page or user.
@@ -269,20 +267,24 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 						$pass = wire('input')->get->preview;
 					} elseif (wire('input')->get->pass) {
 						$pass = wire('input')->get->pass;
-					}elseif(wire('input')->post->pass) {
+					} elseif (wire('input')->post->pass) {
 						$pass = wire('input')->post->pass;
 					}
 
-					if ($pass != "") {
-						$pass = \strtolower($pass);
-					}
+					$error_message = '';
+					$allow_access = false;
 					
-					if ($pass == $moduleConfig['holding_page']) {
-						wire('session')->loggedin = 1;
-						$allow_access = true;
-					} else {
-						wire('session')->login_error = 'Please check your Password';
-						$error_message = 'Please check your Password';
+					if ($pass != "") {
+						
+						$pass = \strtolower($pass);
+
+						if ($pass == $moduleConfig['holding_page']) {
+							wire('session')->loggedin = 1;
+							$allow_access = true;
+						} else {
+							wire('session')->login_error = 'Please check your Password';
+							$error_message = 'Please check your Password';
+						}
 					}
 				}
 
@@ -404,25 +406,25 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 	 * @return String
 	 */
 
-	public function edit_field_markup($field_name, $field_value, $page_id=0){
+	public function edit_field_markup($field_name, $field_value, $page_id = 0)
+	{
 
-		if(!$page_id){
-			$page_id=wire('page')->id;
+		if (!$page_id) {
+			$page_id = wire('page')->id;
 		}
 
 		// At the moment we're only supporting text fields.
 		// I think we should be able do something fancier with numbers etc.
-		$markup='<input id="mu_ef_' . $field_name . '_' . $page_id . '" 
+		$markup = '<input id="mu_ef_' . $field_name . '_' . $page_id . '" 
 		name="mu_ef_value" 
 		type="text" 
 		class="hx_text" ';
-		$markup.='hx-post="/millcoutils/update_field/' . $page_id . '/' . $field_name . '" 
+		$markup .= 'hx-post="/millcoutils/update_field/' . $page_id . '/' . $field_name . '" 
 		hx-swap="outerHTML" 
 		hx-trigger="change"
 		value="' . $field_value . '">';
 
 		return $markup;
-
 	}
 
 
@@ -733,7 +735,7 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 			// if we've set a config variable mu_add_ps_tags 
 			$image_attributes = '';
 
-			if(isset(wire('config')->mu_add_ps_tags) && wire('config')->mu_add_ps_tags){
+			if (isset(wire('config')->mu_add_ps_tags) && wire('config')->mu_add_ps_tags) {
 				$image_attributes .= ' data-caption="' . $sanitizer->entities1($caption) . '"';
 				$image_attributes .= ' data-width="' . $thumb->width . '"';
 				$image_attributes .= ' data-height="' . $thumb->height . '"';
@@ -784,15 +786,15 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 	public function reasonable_password($required_entries = 1, $options = array())
 	{
 
-		if(isset($options['wordlist']) && $options['wordlist'] == 'short'){
+		if (isset($options['wordlist']) && $options['wordlist'] == 'short') {
 			$wordlist = 'eff_short_wordlist.txt';
-		}else{
+		} else {
 			$wordlist = 'eff_large_wordlist.txt';
 		}
 
-		if(isset($options['separator'])){
+		if (isset($options['separator'])) {
 			$separator = $options['separator'];
-		}else{
+		} else {
 			$separator = '-';
 		}
 
@@ -801,9 +803,9 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		$no_of_words = count($words);
 
 		// If we have a sensible length option then use that, otherwise default to 5.
-		if(isset($options['length']) && $options['length'] > 2 && $options['length'] < 20){
+		if (isset($options['length']) && $options['length'] > 2 && $options['length'] < 20) {
 			$no_of_words_in_passphrase = $options['length'];
-		}else{
+		} else {
 			$no_of_words_in_passphrase = 5;
 		}
 

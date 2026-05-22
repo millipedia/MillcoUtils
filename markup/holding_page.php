@@ -98,7 +98,7 @@ input[type=password]{
             <p>To view the development site you either need to be logged into the admin area or you can give the password here:</p>
             <?php
 
-                if($error_message!='') {
+                if(isset($error_message) && $error_message!='') {
                 	echo "<div class='error'>" . $error_message . "</div>";
                 }
 			?>	
