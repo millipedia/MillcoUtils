@@ -688,10 +688,16 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 				} elseif ($image->sub_content) {
 					$caption = $image->sub_content;
 				}
-
-				// We can't have paragraph tags in the caption.
-				$caption = mb_ereg_replace('^<p>|</p>$', '', $caption);
 			}
+
+			$sanitizer = $this->wire()->sanitizer;
+			$caption = $sanitizer->text($caption, [
+				'multiLine' => true,
+				'maxLength' => 0,
+			]);
+			$alt = $sanitizer->text($alt, [
+				'maxLength' => 0,
+			]);
 
 			// default to lazy loading.
 			if (isset($options['not_lazy']) && $options['not_lazy'] == 1) {
@@ -723,7 +729,26 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 				$image_markup .= '<source media="(max-width: 480px)" srcset="' . $smol_pic->webp->url . '" type="image/webp">';
 			}
 
-			$image_tag_markup = '<img class="' . $classes . '" src="' . $thumb->url . '" alt="' . $alt . '" width="' . $thumb->width . '" height="' . $thumb->height . '" ' . $lazy . '>';
+			// lets add a data-caption attribute to the image.
+			// if we've set a config variable mu_add_ps_tags 
+			$image_attributes = '';
+
+			if(isset(wire('config')->mu_add_ps_tags) && wire('config')->mu_add_ps_tags){
+				$image_attributes .= ' data-caption="' . $sanitizer->entities1($caption) . '"';
+				$image_attributes .= ' data-width="' . $thumb->width . '"';
+				$image_attributes .= ' data-height="' . $thumb->height . '"';
+				$image_attributes .= ' data-alt="' . $sanitizer->entities1($alt) . '"';
+			}
+
+			$image_tag_markup = '<img ';
+			$image_tag_markup .= ' class="' . $classes . '" ';
+			$image_tag_markup .= ' src="' . $thumb->url . '" ';
+			$image_tag_markup .= ' alt="' . $sanitizer->entities1($alt) . '" ';
+			$image_tag_markup .= ' width="' . $thumb->width . '" ';
+			$image_tag_markup .= ' height="' . $thumb->height . '" ';
+			$image_tag_markup .= $image_attributes . ' ';
+			$image_tag_markup .= ' ' . $lazy . '>';
+
 
 
 			// just in case we want to return just the image tag without the picture tag.
@@ -740,7 +765,7 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 			// let's only wrap in a figure now if we have a caption.
 			if ($caption !== '') {
 				$image_markup = '<figure>' . $image_markup;
-				$image_markup .= '<figcaption>' . htmlspecialchars_decode($caption) . '</figcaption>';
+				$image_markup .= '<figcaption>' . $sanitizer->entities1($caption) . '</figcaption>';
 				$image_markup .= '</figure>';
 			}
 		}
