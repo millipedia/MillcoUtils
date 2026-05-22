@@ -84,6 +84,12 @@ Alt text is pulled from either an 'image_alt' field or the img 'description' val
 
 The module now also installs a TextFormatter. If you add this to a text field then it replaces inline images with a source set and tidies up some tags that TinyMCE puts in but shouldn't.
 
+If you set a config variable mu_add_ps_tags
+
+	$config->mu_add_ps_tags=true
+
+then the Textformatter will add caption and alt as data attributes on any images processed. We mostly use this for creating PhotoSwipe galleries from images in the content of a page.
+
 ## Analytics
 
 You can include either a Cabin Analytics or Fathom Analytics tag (or hey, both if you want) by providing the necessary details in the Analytics section on the utils page.
