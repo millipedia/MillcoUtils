@@ -70,7 +70,7 @@ if ($moduleConfig->eb_vertical) {
 		box-shadow: 2px 2px 4px #666;
 		z-index: 999;
 		cursor: move;
-		<?=$eb_position;?>
+		<?= $eb_position; ?>
 	}
 
 	.mu_edit_bar a {
@@ -117,10 +117,13 @@ if ($moduleConfig->eb_vertical) {
 <div id="mu_edit_bar" class="mu_edit_bar <?= $eb_classes ?>" nonce="<?= $page->nonce ?>">
 
 	<?php
+	echo '<a href="' . wire()->page->editURL . '" class="no_external_link">' . mu_editbar_icon('edit') . 'Edit</a>';
+	echo '<a href="' . wire()->urls->admin . 'page" class="no_external_link">' . mu_editbar_icon('pages') . 'Pages</a>';
 
-	echo '<a href="' . $page->editURL . '" class="no_external_link">' . mu_editbar_icon('edit') . 'Edit</a>';
-	echo '<a href="' . $urls->admin . 'page" class="no_external_link">' . mu_editbar_icon('pages') . 'Pages</a>';
-	echo '<a href="' . $urls->admin . 'page/add/?parent_id=' . $page->id . '" class="no_external_link">' . mu_editbar_icon('add') . 'Add</a>';
+	// add a button to add a new page if the page template allows it.
+	if (!wire()->page->template->noChildren) {
+		echo '<a href="' . wire()->urls->admin . 'page/add/?parent_id=' . wire()->page->id . '" class="no_external_link">' . mu_editbar_icon('add') . 'Add</a>';
+	}
 
 	// additional buttons
 	if ($moduleConfig->extra_buttons) {
@@ -184,7 +187,6 @@ if ($moduleConfig->eb_vertical) {
 </div>
 
 <script nonce="<?= $page->nonce ?>">
-
 	const edit_bar = document.getElementById("mu_edit_bar");
 
 	// Make the edit bar draggable:
