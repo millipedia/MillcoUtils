@@ -117,6 +117,8 @@ To mark up a button or link to open in a dialog you need to give it the class 'e
 
 We don't include any CSS for the dialog by default (we have it in our skeleton CSS) but I've included some example CSS in the [example.css](example.css) file in this repository.
 
+If you enable Admin Tweaks then we add a Save & Close button to our modal.
+
 Again, there are a couple of separate modules that do this  eg. [AdminInModal](https://github.com/MetaTunes/AdminInModal) if you need something fancier.
 
 ## Truncate logs

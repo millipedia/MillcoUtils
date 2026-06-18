@@ -177,6 +177,7 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		// Add admin tweak styles if the user has opted in.
 		if (array_key_exists('load_admin_tweaks', $moduleConfig) && $moduleConfig['load_admin_tweaks']) {
 			$this->config->styles->add($this->config->urls->MillcoUtils . "css/admin_tweaks.css");
+			$this->config->scripts->add($this->config->urls->MillcoUtils . "js/admin_tweaks.js");
 		}
 
 		// Add HTMX to admin if the user has opted in.

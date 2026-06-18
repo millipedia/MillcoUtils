@@ -200,8 +200,8 @@ class ProcessMillcoUtils extends Process implements Module
 		/** @var InputfieldCheckbox $field */
 		$field = $this->modules->get('InputfieldCheckbox');
 		$field->name = 'load_admin_tweaks';
-		$field->label = 'Admin CSS tweaks';
-		$field->description = 'Apply CSS admin tweaks to the backend.';
+		$field->label = 'Admin tweaks';
+		$field->description = 'Apply admin tweaks to the backend. This includes CSS tweaks and JS tweaks.';
 		$field->value = 1;
 		$field->columnWidth = 50;
 		if ($moduleConfig['load_admin_tweaks']) {

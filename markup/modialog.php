@@ -1,4 +1,4 @@
-<?php
+<?php namespace ProcessWire;
 
 /**
  * Add a dialog element and script so we can load a page in a modal dialog
@@ -6,6 +6,8 @@
  * We normally use this for editing a page in a modal dialog.
  * 
  * 
+ * @var MillcoUtils $mu
+ *  
  * */
 
 ?>
@@ -85,9 +87,13 @@
 					}else{
 						window.modialog_needs_reload = true;
 					}
-					
-					// not sure we should explicitly add the modal=1 here.
-					modialog_iframe(oid_button.href + '&modal=1');
+
+					// ifthe href does not already have a modal=1 parameter then add it.
+					if(!oid_button.href.includes('modal=1')){
+						oid_button.href += '&modal=1';
+					}
+
+					modialog_iframe(oid_button.href);
 
 				});
 
