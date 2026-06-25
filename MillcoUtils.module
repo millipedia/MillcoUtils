@@ -246,7 +246,15 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		// This is where we check for a holding page.
 		// This can't go in init because the page isn't loaded yet.
 
-		if (wire('page')->template != 'admin') {		// we only want to do this on the frontend.
+		// If we're in a CLI command then ignore the holding page. 
+		// this is useful for cron jobs etc.
+		if (defined('PHP_SAPI') && PHP_SAPI === 'cli') {
+			$cli=true;
+		} else {
+			$cli=false;
+		}
+
+		if (wire('page')->template != 'admin' && !$cli) {		// we only want to do this on the frontend.
 
 			$moduleConfig = $this->modules->getConfig('MillcoUtils');
 
