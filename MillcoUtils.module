@@ -18,6 +18,7 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 	public $nonce = ''; // a page nonce we set for use in inline scripts etc
 	public $mu_settings; // some sitewide settings.
 	public $variables = []; // a list of variables we can use in the templates.
+	private ?\NumberFormatter $gbp_formatter = null;
 
 	public static function getModuleInfo()
 	{
@@ -782,6 +783,27 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		}
 
 		return $image_markup;
+	}
+
+	/**
+	 * Format a value as GBP currency (en_GB locale).
+	 *
+	 * @param float|int|string|null $amount
+	 * @return string
+	 */
+	public function format_gbp(float|int|string|null $amount): string
+	{
+		if ($amount === null || $amount === '') {
+			return '';
+		}
+
+		if ($this->gbp_formatter === null) {
+			$this->gbp_formatter = new \NumberFormatter('en_GB', \NumberFormatter::CURRENCY);
+		}
+
+		$formatted = $this->gbp_formatter->formatCurrency((float) $amount, 'GBP');
+
+		return $formatted !== false ? $formatted : '£' . number_format((float) $amount, 2);
 	}
 
 	/**
