@@ -316,6 +316,8 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 
 	/**
 	 * Attach the nonce to the return value of Page::nonce.
+	 * 
+	 * @param \ProcessWire\HookEvent $event
 	 */
 	public function hook_nonce($event)
 	{
@@ -375,6 +377,7 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 	/**
 	 * modify the return value of Page::render() to add our edit toolbar markup. 
 	 * 
+	 * @param \ProcessWire\HookEvent $event
 	 */
 
 	public function edit_buttons($event)
@@ -440,6 +443,8 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 
 	/**
 	 * Add analytics tags
+	 * 
+	 * @param \ProcessWire\HookEvent $event
 	 */
 
 	public function analytics_tags($event)
@@ -502,8 +507,8 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 	/**
 	 * Add open graph tags
 	 * 
-	 * @param Array $options
-	 * @return String
+	 * @param array $options
+	 * @return string
 	 */
 
 	public function open_graph_tags($options = [])
@@ -563,8 +568,9 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 	 * get_icon_markup
 	 * Given a filename and a path, grab the svg and return it as a string.
 	 * 
-	 * @param String $filenamepath
-	 * @return String
+	 * @param string $filename
+	 * @param string $path
+	 * @return string
 	 */
 
 	private function get_icon_markup($filename, $path)
@@ -624,10 +630,11 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 	 * 
 	 * Takes a Pageimage object and does some basic source setting.
 	 * 
-	 * @param Pageimage $image
-	 * @param Int widht
-	 * @param Int height
-	 * @param Array options
+	 * @param \ProcessWire\Pageimage $image
+	 * @param int $width
+	 * @param int $height
+	 * @param array $options
+	 * @return string
 	 */
 
 
@@ -809,9 +816,9 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 	/**
 	 * Generate a password
 	 * 
-	 * @param Int $required_entries
-	 * @param Array $options
-	 * @return Array
+	 * @param int $required_entries
+	 * @param array $options
+	 * @return array
 	 */
 
 	public function reasonable_password($required_entries = 1, $options = array())
