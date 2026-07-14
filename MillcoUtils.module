@@ -394,6 +394,12 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		// Get the current page
 		$page = $event->object;
 
+		// Skip field/partial renders (e.g. RepeaterMatrix $item->render()) —
+		// those also fire Page::render hooks but have no full document to inject into.
+		if (strpos((string) $event->return, '</body') === false) {
+			return;
+		}
+
 		if (!($page->template == 'admin')) {
 
 			// Edit link to admin for howard.

@@ -16,16 +16,18 @@ namespace ProcessWire;
  * 
  */
 
-function mu_editbar_icon($filename)
-{
+if (!function_exists(__NAMESPACE__ . '\\mu_editbar_icon')) {
+	function mu_editbar_icon($filename)
+	{
 
-	$path = wire('config')->paths->siteModules . 'MillcoUtils/icons/';
-	$filename = $path . $filename . '.svg';
+		$path = wire('config')->paths->siteModules . 'MillcoUtils/icons/';
+		$filename = $path . $filename . '.svg';
 
-	if ($icon = file_get_contents($filename)) {
-		return $icon;
-	} else {
-		return $filename;
+		if ($icon = file_get_contents($filename)) {
+			return $icon;
+		} else {
+			return $filename;
+		}
 	}
 }
 
