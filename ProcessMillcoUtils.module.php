@@ -1,6 +1,8 @@
 <?php
 namespace ProcessWire;
 
+require_once __DIR__ . '/RockMigrationsExporter.php';
+
 /**
  * ProcessMillcoUtils
  * 
@@ -67,6 +69,10 @@ class ProcessMillcoUtils extends Process implements Module
 			return 'You require additional permissions to edit these settings.';
 		}
 
+		if ($this->input->post('rm_export_submit')) {
+			$this->handleRockMigrationsExport($this->input->post);
+		}
+
 			if ($this->input->post('submit')) {
 			$this->mu_save_settings($this->input->post);
 		}
@@ -81,6 +87,8 @@ class ProcessMillcoUtils extends Process implements Module
 			$panel_info = wire('files')->render(wire('config')->paths->siteModules . 'MillcoUtils/panel_info.php', ['moduleConfig' => $moduleConfig]);
 			$admin_page_markup .= $panel_info;
 		$admin_page_markup .= '</div>';
+
+		$admin_page_markup .= $this->renderRockMigrationsExportForm();
 
 		/** @var InputfieldForm $form */
 		$form = $this->modules->get('InputfieldForm');
@@ -550,6 +558,102 @@ class ProcessMillcoUtils extends Process implements Module
 		}
 
 		return $files_removed;
+	}
+
+	/**
+	 * Render the RockMigrations export form.
+	 *
+	 * @return string
+	 */
+	protected function renderRockMigrationsExportForm(): string
+	{
+		if (!$this->modules->isInstalled('RockMigrations')) {
+			return '<div class="uk-alert uk-alert-warning">RockMigrations is not installed. Config migration export requires RockMigrations.</div>';
+		}
+
+		/** @var RockMigrationsExporter $exporter */
+		$exporter = $this->wire(new RockMigrationsExporter());
+		$names = $exporter->getExportableNames();
+
+		/** @var InputfieldForm $form */
+		$form = $this->modules->get('InputfieldForm');
+		$form->action = './';
+
+		/** @var InputfieldFieldset $fieldset */
+		$fieldset = $this->modules->get('InputfieldFieldset');
+		$fieldset->label = 'RockMigrations export';
+		$fieldset->description = 'Generate config migration files from existing fields or templates in site/RockMigrations/. Empty properties are omitted.';
+		$fieldset->icon = 'code';
+		$fieldset->collapsed = Inputfield::collapsedYes;
+
+		/** @var InputfieldSelect $field */
+		$field = $this->modules->get('InputfieldSelect');
+		$field->name = 'rm_export_target';
+		$field->label = 'Field or template';
+		$field->required = true;
+		$field->columnWidth = 100;
+		$field->addOption('', '— Select —');
+		$field->addOption('-fields-', '— Fields —');
+		foreach ($names['fields'] as $name) {
+			$field->addOption("fields/$name", $name);
+		}
+		$field->addOption('-templates-', '— Templates —');
+		foreach ($names['templates'] as $name) {
+			$field->addOption("templates/$name", $name);
+		}
+		$fieldset->add($field);
+
+		/** @var InputfieldCheckbox $field */
+		$field = $this->modules->get('InputfieldCheckbox');
+		$field->name = 'rm_export_overwrite';
+		$field->label = 'Overwrite existing file';
+		$field->description = 'Replace the migration file if it already exists in site/RockMigrations/.';
+		$field->value = 1;
+		$field->columnWidth = 100;
+		$fieldset->add($field);
+
+		/** @var InputfieldSubmit $button */
+		$button = $this->modules->get('InputfieldSubmit');
+		$button->name = 'rm_export_submit';
+		$button->value = 'Export';
+		$button->icon = 'download';
+		$fieldset->add($button);
+
+		$form->add($fieldset);
+
+		return $form->render();
+	}
+
+	/**
+	 * Handle RockMigrations export form submission.
+	 *
+	 * @param WireInputData $post
+	 * @return void
+	 */
+	protected function handleRockMigrationsExport(WireInputData $post): void
+	{
+		$target = (string) $post->rm_export_target;
+		$overwrite = (bool) $post->rm_export_overwrite;
+
+		if (!str_contains($target, '/')) {
+			$this->error('Please select a field or template to export.');
+			$this->session->redirect('./');
+			return;
+		}
+
+		[$type, $name] = explode('/', $target, 2);
+
+		try {
+			/** @var MillcoUtils $mu */
+			$mu = $this->modules->get('MillcoUtils');
+			$file = $mu->exportRockMigration($type, $name, $overwrite);
+			$this->message("Exported $type/$name to " . wire('config')->paths->site . "RockMigrations/$type/$name.php");
+			$this->log("RockMigrations export wrote $file");
+		} catch (\Throwable $th) {
+			$this->error($th->getMessage());
+		}
+
+		$this->session->redirect('./');
 	}
 
 

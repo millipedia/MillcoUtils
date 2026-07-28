@@ -168,6 +168,13 @@ By default it uses the EFF long word list (editted slightly to remove a few Amer
 
 If the number of passwords requested is more than one then it returns an array of passwords instead of a single string.
 
+Honestly I hardly ever use this. Might take it out one of these days
+
+# Export RockMigrations 'config migrations' files
+
+You can select fields and templates to export to slimmed down files for use in RockMigrations. This is the 'Config migrations' pattern where field and template definitions are kept in separate files in /site/RockMigrations/fields|templates 
+It's dead handy.
+
 # Things it doesn't yet but will soon.	
 
 - [ ] Configurable CSP

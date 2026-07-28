@@ -25,7 +25,7 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		return [
 			'title' => 'MillcoUtils',
 			'summary' => 'Very simple config options we often use.',
-			'version' => 103,
+			'version' => 104,
 			'autoload' => true,
 			'singular' => true,
 			'permanent' => false,
@@ -895,5 +895,22 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		} else {
 			return $password_list;
 		}
+	}
+
+	/**
+	 * Export a field or template to a RockMigrations config migration file.
+	 *
+	 * @param string $type fields|templates
+	 * @param string $name Field or template name
+	 * @param bool $overwrite Replace an existing migration file
+	 * @return string Absolute path to the written file
+	 */
+	public function exportRockMigration(string $type, string $name, bool $overwrite = false): string
+	{
+		require_once __DIR__ . '/RockMigrationsExporter.php';
+
+		/** @var RockMigrationsExporter $exporter */
+		$exporter = $this->wire(new RockMigrationsExporter());
+		return $exporter->export($type, $name, $overwrite);
 	}
 }
