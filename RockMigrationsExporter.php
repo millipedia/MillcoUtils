@@ -7,6 +7,11 @@ class RockMigrationsExporter extends Wire
 {
 
 	/**
+	 * Field properties holding IDs that belong to a single install
+	 */
+	const localIdKeys = ['parent_id', 'template_id', 'template_ids'];
+
+	/**
 	 * Export a field or template to site/RockMigrations/{type}/{name}.php
 	 *
 	 * @param string $type fields|templates
@@ -51,6 +56,8 @@ class RockMigrationsExporter extends Wire
 
 		if ($type === 'templates' && isset($data['fields'])) {
 			$data = ['fields' => $data['fields']];
+		} elseif ($type === 'fields') {
+			$data = $this->pruneLocalIds($item, $data);
 		}
 
 		$data = $this->pruneEmpty($data);
@@ -79,6 +86,41 @@ class RockMigrationsExporter extends Wire
 		$this->files->filePutContents($file, $php);
 
 		return $file;
+	}
+
+	/**
+	 * Remove install-local ID properties from field export data.
+	 *
+	 * Repeater derived fields (Repeater, RepeaterMatrix, FieldsetPage) keep the ID of
+	 * their generated /processwire/repeaters/ parent and template in parent_id and
+	 * template_id. ProcessWire zeroes both when exporting config data, and migrating a
+	 * zero back onto the field detaches it from its storage, so they are always dropped.
+	 *
+	 * Other fieldtypes can use the same keys for real config — a Page field's selectable
+	 * parent, which ProcessWire exports as a portable path — so there only meaningless
+	 * zero values are dropped.
+	 *
+	 * @param Field $field
+	 * @param array $data
+	 * @return array
+	 */
+	public function pruneLocalIds(Field $field, array $data): array
+	{
+		$isRepeater = wireInstanceOf($field->type, 'FieldtypeRepeater');
+
+		foreach (self::localIdKeys as $key) {
+			if (!array_key_exists($key, $data)) continue;
+
+			if ($isRepeater) {
+				unset($data[$key]);
+				continue;
+			}
+
+			$value = $data[$key];
+			if ($value === 0 || $value === '0' || $value === []) unset($data[$key]);
+		}
+
+		return $data;
 	}
 
 	/**
