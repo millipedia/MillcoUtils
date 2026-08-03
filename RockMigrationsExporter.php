@@ -54,12 +54,14 @@ class RockMigrationsExporter extends Wire
 			throw new WireException("Could not export $label '$name'");
 		}
 
-		if ($type === 'templates' && isset($data['fields'])) {
-			$data = ['fields' => $data['fields']];
-		} elseif ($type === 'fields') {
+		if ($type === 'fields') {
 			$data = $this->pruneLocalIds($item, $data);
+		} elseif ($type === 'templates') {
+			// fieldgroups_id mirrors the template name; fields are set via the fields key
+			unset($data['fieldgroups_id']);
 		}
 
+		$data = $this->pruneDefaults($item, $data);
 		$data = $this->pruneEmpty($data);
 
 		$dir = $this->config->paths->site . "RockMigrations/$type/";
@@ -86,6 +88,102 @@ class RockMigrationsExporter extends Wire
 		$this->files->filePutContents($file, $php);
 
 		return $file;
+	}
+
+	/**
+	 * Remove properties that still match ProcessWire defaults for a new item of this type.
+	 *
+	 * Always keeps:
+	 * - templates: fields (field assignments / context)
+	 * - fields: type (required for RockMigrations to create the field)
+	 *
+	 * @param Field|Template $item
+	 * @param array $data
+	 * @return array
+	 */
+	public function pruneDefaults(Field|Template $item, array $data): array
+	{
+		$defaults = $this->getDefaultData($item);
+		$alwaysKeep = $item instanceof Template
+			? ['fields']
+			: ['type'];
+
+		foreach ($data as $key => $value) {
+			if (in_array($key, $alwaysKeep, true)) continue;
+			if (!array_key_exists($key, $defaults)) continue;
+			if ($this->isDefaultValue($value, $defaults[$key])) {
+				unset($data[$key]);
+			}
+		}
+
+		// Template files declaring `namespace ProcessWire;` store ns as ProcessWire;
+		// that is the normal case, so omit it from migrations.
+		if (($data['ns'] ?? null) === 'ProcessWire') {
+			unset($data['ns']);
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Defaults for a brand-new Template or Field of the same type.
+	 *
+	 * @param Field|Template $item
+	 * @return array
+	 */
+	protected function getDefaultData(Field|Template $item): array
+	{
+		if ($item instanceof Template) {
+			/** @var Template $blank */
+			$blank = $this->wire(new Template());
+			$defaults = $blank->getTableData();
+			if (isset($defaults['data']) && is_array($defaults['data'])) {
+				$defaults = array_merge($defaults, $defaults['data']);
+			}
+			unset(
+				$defaults['data'],
+				$defaults['id'],
+				$defaults['name'],
+				$defaults['modified'],
+				$defaults['fieldgroups_id'],
+			);
+			return $defaults;
+		}
+
+		/** @var Field $blank */
+		$blank = $this->wire(new Field());
+		$blank->type = $item->type;
+		$inputfieldClass = $item->get('inputfieldClass');
+		if ($inputfieldClass) {
+			$blank->set('inputfieldClass', $inputfieldClass);
+		}
+
+		$defaults = $blank->getExportData();
+		unset($defaults['id'], $defaults['name']);
+
+		return $defaults;
+	}
+
+	/**
+	 * Whether an exported value matches the ProcessWire default.
+	 *
+	 * Mirrors ProcessWire's import comparison: exact match, loose match, or both empty.
+	 *
+	 * @param mixed $value
+	 * @param mixed $default
+	 * @return bool
+	 */
+	protected function isDefaultValue(mixed $value, mixed $default): bool
+	{
+		if ($value === $default) return true;
+		if ($value == $default) return true;
+		if (empty($value) && empty($default)) return true;
+
+		if (is_array($value) && is_array($default)) {
+			return array_values($value) === array_values($default);
+		}
+
+		return false;
 	}
 
 	/**
