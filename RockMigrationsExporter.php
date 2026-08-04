@@ -152,6 +152,8 @@ class RockMigrationsExporter extends Wire
 
 		/** @var Field $blank */
 		$blank = $this->wire(new Field());
+		// Fieldtype load / export touches getTable(), which requires a name
+		$blank->setRawSetting('name', 'tmp_defaults');
 		$blank->type = $item->type;
 		$inputfieldClass = $item->get('inputfieldClass');
 		if ($inputfieldClass) {

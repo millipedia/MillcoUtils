@@ -179,6 +179,18 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		if (array_key_exists('load_admin_tweaks', $moduleConfig) && $moduleConfig['load_admin_tweaks']) {
 			$this->config->styles->add($this->config->urls->MillcoUtils . "css/admin_tweaks.css");
 			$this->config->scripts->add($this->config->urls->MillcoUtils . "js/admin_tweaks.js");
+
+			// Suppress RockMigrations code tooltips on field/template edit forms.
+			// RM's addRmHints() adds class "rm-hints"; its JS only attaches UIkit
+			// tooltips when that class is present. Remove it after RM's hook
+			// (priority 100) without touching RockMigrations itself.
+			if ($this->modules->isInstalled('RockMigrations')) {
+				$this->addHookBefore('InputfieldForm::render', function (HookEvent $event) {
+					/** @var InputfieldForm $form */
+					$form = $event->object;
+					$form->removeClass('rm-hints');
+				}, ['priority' => 200]);
+			}
 		}
 
 		// Add HTMX to admin if the user has opted in.
