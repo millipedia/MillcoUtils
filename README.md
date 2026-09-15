@@ -125,7 +125,7 @@ Again, there are a couple of separate modules that do this  eg. [AdminInModal](h
 
 You can set options to prune a log to a given number of days 
 
-## Open Graph tags
+## Open Graph tags and favicon metatags
 
 You can add the usual open graph tags by calling
 
@@ -145,6 +145,14 @@ You can pass an array of options to the function if you want to use specify diff
 		$og_options['use_default_images'] = true;
 	}
 	echo $mu->open_graph_tags($og_options);
+
+To add metatags / links for favicons you can use
+
+	echo $mu->favicons($og_options);
+
+and to combine both favicons and OG tags you can use
+
+	echo $mu->meta_tags($options);
 
 # Holding page
 

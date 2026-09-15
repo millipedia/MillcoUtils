@@ -523,6 +523,41 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 
 
 	/**
+	 * write out meta tags
+	 * 
+	 * This is a wrapper for the favicons and open graph tags functions.
+	 * 
+	 * @param array $options
+	 * @return string
+	 */
+	
+	public function meta_tags($options = [])
+	{
+
+		$favicons_markup = $this->favicons($options);
+		$open_graph_markup = $this->open_graph_tags($options);
+
+		return $favicons_markup . PHP_EOL . $open_graph_markup;
+	}
+
+	/**
+	 * write out favicons
+	 * 
+	 * @param array $options
+	 * @return string
+	 */
+
+	public function favicons($options = [])
+	{
+
+		$path = wire('config')->paths->siteModules . 'MillcoUtils/markup/favicons.php';
+
+		$favicons_markup = wire('files')->render($path, ['options' => $options]);
+
+		return $favicons_markup;
+	}
+
+	/**
 	 * Add open graph tags
 	 * 
 	 * @param array $options
