@@ -81,6 +81,11 @@ class ProcessMillcoUtils extends Process implements Module
 
 		$moduleConfig = $this->modules->getConfig('MillcoUtils');
 
+		// Show a warning if the holding page password is set.
+		if (array_key_exists('holding_page', $moduleConfig) && $moduleConfig['holding_page'] != '') {
+			$this->warning('Holding page password set - this will prevent non-logged in users from viewing the site unless they have the password.');
+		}
+
 		// Show info panel. Might be nice to be able to add to this. Or stick it in an expando box like the other sections.
 
 		$admin_page_markup .='<div class="uk-panel uk-background-muted uk-padding-small uk-margin-bottom">';
@@ -179,7 +184,7 @@ class ProcessMillcoUtils extends Process implements Module
 
 		/** @var InputfieldFieldset $fieldset */
 		$fieldset = $this->modules->get('InputfieldFieldset');
-		$fieldset->label = 'Tweaks';
+		$fieldset->label = 'Tweaks & Holding Page';
 		$fieldset->description = '';
 		$fieldset->notes = '';
 		$fieldset->collapsed = Inputfield::collapsedYes;

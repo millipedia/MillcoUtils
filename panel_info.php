@@ -6,20 +6,21 @@ namespace ProcessWire;
  * Template file which is included in the top panel
  * in the admin.
  * Handy for project links and the like.
+ * 
+ * @var \ProcessWire\ProcessMillcoUtils $this
  */
 
- $mu = wire('modules')->get('MillcoUtils');
+echo '<div class="uk-grid-small uk-text-small uk-text-muted" uk-grid>';
 
+echo '<div class="uk-width-1-3"><strong>Processwire Version : </strong>' .  wire('config')->versionName . '</div>';
 
-echo '<div class="uk-grid-small" uk-grid>';
+echo '<div class="uk-width-1-3"><strong>Utils Version : </strong>' .  $mu->getModuleInfo()['version'] . '</div>';
 
-if(isset($moduleConfig['holding_page']) && $moduleConfig['holding_page'] != ''){
-	// Show a warning if the holding page password is set.
-	echo '<div class="uk-width-1-1"><div class="uk-alert-warning" uk-alert >' . $mu->icon('warning') . ' Holding page password set - this will prevent non-logged in users from viewing the site unless they have the password.</div></div>';
-}
+// PHP_VERSION is always defined. phpversion('tidy') is the tidy
+// extension version and is empty when that extension is not installed.
+$php_version = PHP_VERSION;
 
-echo '<div class="uk-width-1-2"><strong>Processwire Version : </strong>' .  wire('config')->versionName . '</div>';
-echo '<div class="uk-width-1-2"><strong>PHP version : </strong>' . phpversion('tidy') . '</div>';
+echo '<div class="uk-width-1-3"><strong>PHP version : </strong>' . $php_version . '</div>';
 if ($_SERVER['REMOTE_ADDR']) {
 	echo '<div class="uk-width-1-2"><strong>Your IP address : </strong>' . $_SERVER['REMOTE_ADDR'] . '</div>';
 }
