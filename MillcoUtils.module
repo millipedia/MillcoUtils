@@ -1089,4 +1089,42 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		$modules->saveConfig($installed, $data);
 		return $installed;
 	}
+
+	/**
+	 * Install a module for a macro (or similar), with consistent status messages.
+	 *
+	 * Uses the module name once for "already installed" / success / failure feedback.
+	 *
+	 * @param string $name Module class name
+	 * @param string $url Optional zip download URL
+	 * @param array $conf Optional module config to apply after install
+	 * @return bool True if the module is installed afterwards
+	 */
+	public function ensureModule(string $name, string $url = '', array $conf = []): bool
+	{
+		$modules = $this->wire()->modules;
+
+		if ($modules->isInstalled($name)) {
+			$this->warning("$name is already installed");
+			return true;
+		}
+
+		if ($url !== '' && $conf !== []) {
+			$module = $this->installModule($name, $conf, $url);
+		} elseif ($url !== '') {
+			$module = $this->installModule($name, $url);
+		} elseif ($conf !== []) {
+			$module = $this->installModule($name, $conf);
+		} else {
+			$module = $this->installModule($name);
+		}
+
+		if ($module || $modules->isInstalled($name)) {
+			$this->message("$name has been installed");
+			return true;
+		}
+
+		$this->error("Could not install $name — check that module downloads are allowed");
+		return false;
+	}
 }

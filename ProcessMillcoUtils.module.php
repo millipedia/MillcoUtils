@@ -97,7 +97,10 @@ class ProcessMillcoUtils extends Process implements Module
 			$admin_page_markup .= $panel_info;
 		$admin_page_markup .= '</div>';
 
+		// Render the rock migrations export form.
 		$admin_page_markup .= $this->renderRockMigrationsExportForm();
+		
+		// Render the macros form.
 		$admin_page_markup .= $this->renderMacrosForm();
 
 		/** @var InputfieldForm $form */
@@ -745,16 +748,19 @@ class ProcessMillcoUtils extends Process implements Module
 
 		$macros = $this->getMacros();
 
+		/** @var MillcoUtils $mu */
+		$mu = $this->modules->get('MillcoUtils');
+
 		foreach ($selected as $name) {
 			$name = $this->sanitizer->fieldName($name);
 			$macro = $macros->get($name);
-			if (!$macro || !is_file($macro->file)) {
+			if (!$macro) {
 				$this->error("Unknown macro: $name");
 				continue;
 			}
 
 			try {
-				include $macro->file;
+				$this->runMacro($macro, $mu);
 			} catch (\Throwable $th) {
 				$this->error("Macro '$name' failed: " . $th->getMessage());
 			}
@@ -764,9 +770,38 @@ class ProcessMillcoUtils extends Process implements Module
 	}
 
 	/**
+	 * Execute one macro definition.
+	 *
+	 * @param WireData $macro
+	 * @param MillcoUtils $mu
+	 * @return void
+	 */
+	protected function runMacro(WireData $macro, MillcoUtils $mu): void
+	{
+		if ($macro->run instanceof \Closure) {
+			($macro->run)($mu, $macro);
+			return;
+		}
+
+		$module = (string) $macro->module;
+		if ($module === '') {
+			$this->error("Macro '{$macro->name}' has no module or run callback");
+			return;
+		}
+
+		$config = is_array($macro->moduleConfig) ? $macro->moduleConfig : [];
+		$mu->ensureModule($module, (string) $macro->url, $config);
+	}
+
+	/**
 	 * Discover macros from MillcoUtils/macros/*.php
 	 *
-	 * Description is the first line of the file docblock (same pattern as RockMigrations).
+	 * Each file returns an array:
+	 * - description (string) — shown in the UI
+	 * - module (string) — module class to install via ensureModule()
+	 * - url (string) — optional zip download URL
+	 * - moduleConfig (array) — optional module config after install
+	 * - run (Closure) — optional custom callback; receives ($mu, $macro)
 	 *
 	 * @return WireArray
 	 */
@@ -781,15 +816,20 @@ class ProcessMillcoUtils extends Process implements Module
 		}
 
 		foreach ($this->files->find($dir, ['extensions' => ['php']]) as $file) {
+			/** @var mixed $data */
+			$data = include $file;
+			if (!is_array($data)) {
+				continue;
+			}
+
 			$macro = $this->wire(new WireData());
 			$macro->file = $file;
 			$macro->name = substr(basename($file), 0, -4);
-			$macro->description = '';
-
-			$content = $this->files->fileGetContents($file);
-			if (is_string($content) && preg_match('/\/\*\*\n \* (.*)/m', $content, $matches)) {
-				$macro->description = $matches[1];
-			}
+			$macro->description = (string) ($data['description'] ?? '');
+			$macro->module = (string) ($data['module'] ?? '');
+			$macro->url = (string) ($data['url'] ?? '');
+			$macro->moduleConfig = is_array($data['moduleConfig'] ?? null) ? $data['moduleConfig'] : [];
+			$macro->run = ($data['run'] ?? null) instanceof \Closure ? $data['run'] : null;
 
 			$macros->add($macro);
 		}

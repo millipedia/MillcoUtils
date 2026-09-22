@@ -185,20 +185,32 @@ It's dead handy.
 
 # Macros
 
-Similar to RockMigrations macros: tick helpers under Utils → Macros and run them. Scripts live in `MillcoUtils/macros/*.php`. The first line of the file docblock is the description shown in the UI.
+Tick helpers under Utils → Macros and run them. Each file in `MillcoUtils/macros/` returns a PHP array:
+
+	<?php
+	namespace ProcessWire;
+
+	return [
+		'description' => 'Install ProcessDocumentation (admin help / docs pages)',
+		'module' => 'ProcessDocumentation',
+		'url' => 'https://github.com/outflux3/ProcessDocumentation/archive/refs/heads/master.zip',
+		// 'moduleConfig' => ['setting' => 'value'], // optional
+		// 'run' => function(MillcoUtils $mu, WireData $macro) { ... }, // optional custom logic
+	];
+
+`description` is shown in the UI. For install macros, set `module` (and optional `url` / `config`) once — MillcoUtils uses that name for the “already installed” / success / failure messages via `$mu->ensureModule()`.
 
 Currently:
 
-- **processDocumentation** — downloads and installs [ProcessDocumentation](https://processwire.com/modules/process-documentation/)
+- **processDocumentation** — [ProcessDocumentation](https://processwire.com/modules/process-documentation/)
+- **TextformatterEmbedMedia**
+- **TextformatterLiteVideoEmbed**
 
-Macros (and anything else) can use MillcoUtils helpers that mirror RockMigrations’ install API — no RockMigrations required:
+Lower-level install helpers (no messages):
 
 	$mu = wire('modules')->get('MillcoUtils');
 	$mu->installModule('PagePathHistory');
-	$mu->installModule('ProcessDocumentation', 'https://github.com/…/master.zip');
 	$mu->installModule('SomeModule', ['setting' => 'value'], 'https://…/master.zip');
-
-To add another macro: drop a PHP file in `macros/` and follow the same pattern as `processDocumentation.php`.
 
 # Things it doesn't yet but will soon.	
 
