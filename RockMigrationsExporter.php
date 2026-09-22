@@ -12,11 +12,8 @@ class RockMigrationsExporter extends Wire
 	const localIdKeys = ['parent_id', 'template_id', 'template_ids'];
 
 	/**
-	 * Name previously used on a throwaway Field while reading defaults.
-	 *
-	 * Must never be saved. FieldtypeRepeater::getConfigInputfields() (via getExportData)
-	 * used to persist a field of this name and a repeater_* template, which then collided
-	 * on the next Repeater export: Duplicate entry 'tmp_defaults' for key 'name'.
+	 * Leftover name from older exporter versions that called getExportData() on a dummy Field.
+	 * Cleanup only — never create a field with this name.
 	 */
 	const dummyFieldName = 'tmp_defaults';
 
@@ -166,43 +163,19 @@ class RockMigrationsExporter extends Wire
 	/**
 	 * Defaults for a brand-new Field of the same type, without saving anything.
 	 *
-	 * Field::getExportData() calls Fieldtype::exportConfigData(), which always runs
-	 * getConfigInputfields(). For FieldtypeRepeater (and Matrix / FieldsetPage) that
-	 * creates a repeater template and saves the Field — so those types must not use it.
+	 * Do not call Field::getExportData() on an unsaved Field. That runs
+	 * Fieldtype::exportConfigData() → getConfigInputfields(), which for many
+	 * types (Repeater, Float, Decimal, Options, …) queries or creates
+	 * field_{name} / related schema. Using a dummy name caused:
+	 * - Duplicate entry 'tmp_defaults' for key 'name' (Repeater save)
+	 * - Table '….field_tmp_defaults' doesn't exist (Float / similar)
+	 *
+	 * Instead: Field settings from getTableData(), plus Inputfield module defaults.
 	 *
 	 * @param Field $item
 	 * @return array
 	 */
 	protected function getFieldDefaultData(Field $item): array
-	{
-		if (wireInstanceOf($item->type, 'FieldtypeRepeater')) {
-			return $this->getRepeaterFamilyDefaultData($item);
-		}
-
-		/** @var Field $blank */
-		$blank = $this->wire(new Field());
-		// Fieldtype load / export touches getTable(), which requires a name.
-		// This object is never saved.
-		$blank->setRawSetting('name', self::dummyFieldName);
-		$blank->type = $item->type;
-		$inputfieldClass = $item->get('inputfieldClass');
-		if ($inputfieldClass) {
-			$blank->set('inputfieldClass', $inputfieldClass);
-		}
-
-		$defaults = $blank->getExportData();
-		unset($defaults['id'], $defaults['name']);
-
-		return $defaults;
-	}
-
-	/**
-	 * Field-level and Inputfield defaults for Repeater-family types.
-	 *
-	 * @param Field $item
-	 * @return array
-	 */
-	protected function getRepeaterFamilyDefaultData(Field $item): array
 	{
 		/** @var Field $blank */
 		$blank = $this->wire(new Field());
