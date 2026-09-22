@@ -12,6 +12,15 @@ class RockMigrationsExporter extends Wire
 	const localIdKeys = ['parent_id', 'template_id', 'template_ids'];
 
 	/**
+	 * Name previously used on a throwaway Field while reading defaults.
+	 *
+	 * Must never be saved. FieldtypeRepeater::getConfigInputfields() (via getExportData)
+	 * used to persist a field of this name and a repeater_* template, which then collided
+	 * on the next Repeater export: Duplicate entry 'tmp_defaults' for key 'name'.
+	 */
+	const dummyFieldName = 'tmp_defaults';
+
+	/**
 	 * Export a field or template to site/RockMigrations/{type}/{name}.php
 	 *
 	 * @param string $type fields|templates
@@ -55,6 +64,7 @@ class RockMigrationsExporter extends Wire
 		}
 
 		if ($type === 'fields') {
+			$this->deleteLeftoverDummyField();
 			$data = $this->pruneLocalIds($item, $data);
 		} elseif ($type === 'templates') {
 			// fieldgroups_id mirrors the template name; fields are set via the fields key
@@ -150,10 +160,30 @@ class RockMigrationsExporter extends Wire
 			return $defaults;
 		}
 
+		return $this->getFieldDefaultData($item);
+	}
+
+	/**
+	 * Defaults for a brand-new Field of the same type, without saving anything.
+	 *
+	 * Field::getExportData() calls Fieldtype::exportConfigData(), which always runs
+	 * getConfigInputfields(). For FieldtypeRepeater (and Matrix / FieldsetPage) that
+	 * creates a repeater template and saves the Field — so those types must not use it.
+	 *
+	 * @param Field $item
+	 * @return array
+	 */
+	protected function getFieldDefaultData(Field $item): array
+	{
+		if (wireInstanceOf($item->type, 'FieldtypeRepeater')) {
+			return $this->getRepeaterFamilyDefaultData($item);
+		}
+
 		/** @var Field $blank */
 		$blank = $this->wire(new Field());
-		// Fieldtype load / export touches getTable(), which requires a name
-		$blank->setRawSetting('name', 'tmp_defaults');
+		// Fieldtype load / export touches getTable(), which requires a name.
+		// This object is never saved.
+		$blank->setRawSetting('name', self::dummyFieldName);
 		$blank->type = $item->type;
 		$inputfieldClass = $item->get('inputfieldClass');
 		if ($inputfieldClass) {
@@ -164,6 +194,120 @@ class RockMigrationsExporter extends Wire
 		unset($defaults['id'], $defaults['name']);
 
 		return $defaults;
+	}
+
+	/**
+	 * Field-level and Inputfield defaults for Repeater-family types.
+	 *
+	 * @param Field $item
+	 * @return array
+	 */
+	protected function getRepeaterFamilyDefaultData(Field $item): array
+	{
+		/** @var Field $blank */
+		$blank = $this->wire(new Field());
+		$blank->type = $item->type;
+		$inputfieldClass = $item->get('inputfieldClass');
+		if ($inputfieldClass) {
+			$blank->set('inputfieldClass', $inputfieldClass);
+		}
+
+		$defaults = $blank->getTableData();
+		if (isset($defaults['data']) && is_array($defaults['data'])) {
+			$defaults = array_merge($defaults, $defaults['data']);
+		}
+		unset($defaults['data'], $defaults['id'], $defaults['name']);
+
+		if (isset($defaults['type']) && is_object($defaults['type'])) {
+			$defaults['type'] = $defaults['type']->className();
+		}
+
+		foreach ($this->getInputfieldDefaultData($item) as $key => $value) {
+			if (!array_key_exists($key, $defaults)) {
+				$defaults[$key] = $value;
+			}
+		}
+
+		return $defaults;
+	}
+
+	/**
+	 * Default config values from the Inputfield module, without Fieldtype::getConfigInputfields().
+	 *
+	 * @param Field $item
+	 * @return array
+	 */
+	protected function getInputfieldDefaultData(Field $item): array
+	{
+		$inputfieldClass = $item->get('inputfieldClass');
+		if (!$inputfieldClass && $item->type) {
+			$inputfieldClass = 'Inputfield' . $item->type->shortName;
+		}
+		if (!$inputfieldClass || !$this->modules->isInstalled($inputfieldClass)) {
+			return [];
+		}
+
+		$inputfield = $this->modules->get($inputfieldClass);
+		if (!$inputfield instanceof Inputfield) {
+			return [];
+		}
+
+		try {
+			$data = $inputfield->exportConfigData([]);
+		} catch (\Throwable $th) {
+			return [];
+		}
+
+		return is_array($data) ? $data : [];
+	}
+
+	/**
+	 * Remove the dummy field / repeater templates left by earlier Repeater exports.
+	 *
+	 * @return void
+	 */
+	protected function deleteLeftoverDummyField(): void
+	{
+		$fields = $this->wire()->fields;
+		$templates = $this->wire()->templates;
+		$fieldgroups = $this->wire()->fieldgroups;
+
+		$dummy = $fields->get(self::dummyFieldName);
+		if ($dummy && $dummy->id && !$dummy->numFieldgroups()) {
+			try {
+				$fields->delete($dummy);
+			} catch (\Throwable $th) {
+				$this->warning('Could not remove leftover export field ' . self::dummyFieldName . ': ' . $th->getMessage());
+			}
+		}
+
+		$base = FieldtypeRepeater::templateNamePrefix . self::dummyFieldName;
+		$names = [$base];
+		for ($n = 1; $n < 20; $n++) {
+			$names[] = $base . $n;
+		}
+
+		foreach ($names as $name) {
+			$template = $templates->get($name);
+			if ($template && $template->id) {
+				try {
+					$template->flags = Template::flagSystemOverride;
+					$template->flags = 0;
+					$templates->delete($template);
+				} catch (\Throwable $th) {
+					$this->warning("Could not remove leftover export template $name: " . $th->getMessage());
+				}
+			}
+
+			$fieldgroup = $fieldgroups->get($name);
+			if ($fieldgroup && $fieldgroup->id) {
+				try {
+					$fieldgroups->delete($fieldgroup);
+				} catch (\Throwable $th) {
+					$this->warning("Could not remove leftover export fieldgroup $name: " . $th->getMessage());
+				}
+			}
+		}
 	}
 
 	/**

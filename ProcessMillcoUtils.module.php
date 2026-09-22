@@ -587,24 +587,29 @@ class ProcessMillcoUtils extends Process implements Module
 		/** @var InputfieldFieldset $fieldset */
 		$fieldset = $this->modules->get('InputfieldFieldset');
 		$fieldset->label = 'RockMigrations export';
-		$fieldset->description = 'Generate config migration files from existing fields or templates in site/RockMigrations/. Empty properties are omitted.';
+		$fieldset->description = 'Generate config migration files from existing fields and templates in site/RockMigrations/. Empty properties are omitted. Select a field, a template, or both.';
 		$fieldset->icon = 'code';
 		$fieldset->collapsed = Inputfield::collapsedYes;
 
 		/** @var InputfieldSelect $field */
 		$field = $this->modules->get('InputfieldSelect');
-		$field->name = 'rm_export_target';
-		$field->label = 'Field or template';
-		$field->required = true;
-		$field->columnWidth = 100;
+		$field->name = 'rm_export_field';
+		$field->label = 'Field';
+		$field->columnWidth = 50;
 		$field->addOption('', '— Select —');
-		$field->addOption('-fields-', '— Fields —');
 		foreach ($names['fields'] as $name) {
-			$field->addOption("fields/$name", $name);
+			$field->addOption($name, $name);
 		}
-		$field->addOption('-templates-', '— Templates —');
+		$fieldset->add($field);
+
+		/** @var InputfieldSelect $field */
+		$field = $this->modules->get('InputfieldSelect');
+		$field->name = 'rm_export_template';
+		$field->label = 'Template';
+		$field->columnWidth = 50;
+		$field->addOption('', '— Select —');
 		foreach ($names['templates'] as $name) {
-			$field->addOption("templates/$name", $name);
+			$field->addOption($name, $name);
 		}
 		$fieldset->add($field);
 
@@ -637,25 +642,36 @@ class ProcessMillcoUtils extends Process implements Module
 	 */
 	protected function handleRockMigrationsExport(WireInputData $post): void
 	{
-		$target = (string) $post->rm_export_target;
 		$overwrite = (bool) $post->rm_export_overwrite;
+		$targets = [];
 
-		if (!str_contains($target, '/')) {
-			$this->error('Please select a field or template to export.');
+		$fieldName = (string) $post->rm_export_field;
+		if ($fieldName !== '') {
+			$targets[] = ['fields', $fieldName];
+		}
+
+		$templateName = (string) $post->rm_export_template;
+		if ($templateName !== '') {
+			$targets[] = ['templates', $templateName];
+		}
+
+		if ($targets === []) {
+			$this->error('Please select a field or a template to export.');
 			$this->session->redirect('./');
 			return;
 		}
 
-		[$type, $name] = explode('/', $target, 2);
+		/** @var MillcoUtils $mu */
+		$mu = $this->modules->get('MillcoUtils');
 
-		try {
-			/** @var MillcoUtils $mu */
-			$mu = $this->modules->get('MillcoUtils');
-			$file = $mu->exportRockMigration($type, $name, $overwrite);
-			$this->message("Exported $type/$name to " . wire('config')->paths->site . "RockMigrations/$type/$name.php");
-			$this->log("RockMigrations export wrote $file");
-		} catch (\Throwable $th) {
-			$this->error($th->getMessage());
+		foreach ($targets as [$type, $name]) {
+			try {
+				$file = $mu->exportRockMigration($type, $name, $overwrite);
+				$this->message("Exported $type/$name to " . wire('config')->paths->site . "RockMigrations/$type/$name.php");
+				$this->log("RockMigrations export wrote $file");
+			} catch (\Throwable $th) {
+				$this->error($th->getMessage());
+			}
 		}
 
 		$this->session->redirect('./');
