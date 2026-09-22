@@ -73,6 +73,10 @@ class ProcessMillcoUtils extends Process implements Module
 			$this->handleRockMigrationsExport($this->input->post);
 		}
 
+		if ($this->input->post('mu_macros_submit')) {
+			$this->handleMacros($this->input->post);
+		}
+
 			if ($this->input->post('submit')) {
 			$this->mu_save_settings($this->input->post);
 		}
@@ -94,6 +98,7 @@ class ProcessMillcoUtils extends Process implements Module
 		$admin_page_markup .= '</div>';
 
 		$admin_page_markup .= $this->renderRockMigrationsExportForm();
+		$admin_page_markup .= $this->renderMacrosForm();
 
 		/** @var InputfieldForm $form */
 		$form = $this->modules->get('InputfieldForm');
@@ -677,6 +682,121 @@ class ProcessMillcoUtils extends Process implements Module
 		$this->session->redirect('./');
 	}
 
+	/**
+	 * Render the MillcoUtils macros form (install helpers, etc.).
+	 *
+	 * @return string
+	 */
+	protected function renderMacrosForm(): string
+	{
+		$macros = $this->getMacros();
+		if (!$macros->count()) {
+			return '';
+		}
 
+		/** @var InputfieldForm $form */
+		$form = $this->modules->get('InputfieldForm');
+		$form->action = './';
+
+		/** @var InputfieldFieldset $fieldset */
+		$fieldset = $this->modules->get('InputfieldFieldset');
+		$fieldset->label = 'Macros';
+		$fieldset->description = 'One-shot helpers — install common modules and run setup snippets. Tick what you want and click Run.';
+		$fieldset->icon = 'magic';
+		$fieldset->collapsed = Inputfield::collapsedYes;
+
+		/** @var InputfieldCheckboxes $field */
+		$field = $this->modules->get('InputfieldCheckboxes');
+		$field->name = 'mu_macros';
+		$field->label = 'Available macros';
+		$field->entityEncodeText = false;
+		foreach ($macros as $macro) {
+			$label = implode(' — ', array_filter([$macro->name, $macro->description]));
+			$field->addOption($macro->name, $label);
+		}
+		$fieldset->add($field);
+
+		/** @var InputfieldSubmit $button */
+		$button = $this->modules->get('InputfieldSubmit');
+		$button->name = 'mu_macros_submit';
+		$button->value = 'Run selected macros';
+		$button->icon = 'play';
+		$fieldset->add($button);
+
+		$form->add($fieldset);
+
+		return $form->render();
+	}
+
+	/**
+	 * Run selected MillcoUtils macros.
+	 *
+	 * @param WireInputData $post
+	 * @return void
+	 */
+	protected function handleMacros(WireInputData $post): void
+	{
+		$selected = $post->mu_macros;
+		if (!is_array($selected) || $selected === []) {
+			$this->error('Please select at least one macro to run.');
+			$this->session->redirect('./');
+			return;
+		}
+
+		$macros = $this->getMacros();
+
+		foreach ($selected as $name) {
+			$name = $this->sanitizer->fieldName($name);
+			$macro = $macros->get($name);
+			if (!$macro || !is_file($macro->file)) {
+				$this->error("Unknown macro: $name");
+				continue;
+			}
+
+			try {
+				include $macro->file;
+			} catch (\Throwable $th) {
+				$this->error("Macro '$name' failed: " . $th->getMessage());
+			}
+		}
+
+		$this->session->redirect('./');
+	}
+
+	/**
+	 * Discover macros from MillcoUtils/macros/*.php
+	 *
+	 * Description is the first line of the file docblock (same pattern as RockMigrations).
+	 *
+	 * @return WireArray
+	 */
+	protected function getMacros(): WireArray
+	{
+		/** @var WireArray $macros */
+		$macros = $this->wire(new WireArray());
+		$dir = $this->config->paths->siteModules . 'MillcoUtils/macros/';
+
+		if (!is_dir($dir)) {
+			return $macros;
+		}
+
+		foreach ($this->files->find($dir, ['extensions' => ['php']]) as $file) {
+			$macro = $this->wire(new WireData());
+			$macro->file = $file;
+			$macro->name = substr(basename($file), 0, -4);
+			$macro->description = '';
+
+			$content = $this->files->fileGetContents($file);
+			if (is_string($content) && preg_match('/\/\*\*\n \* (.*)/m', $content, $matches)) {
+				$macro->description = $matches[1];
+			}
+
+			$macros->add($macro);
+		}
+
+		$macros->sort('name');
+
+		return $macros;
+	}
 
 }

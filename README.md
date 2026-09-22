@@ -183,6 +183,23 @@ Honestly I hardly ever use this. Might take it out one of these days
 You can select fields and templates to export to slimmed down files for use in RockMigrations. This is the 'Config migrations' pattern where field and template definitions are kept in separate files in /site/RockMigrations/fields|templates 
 It's dead handy.
 
+# Macros
+
+Similar to RockMigrations macros: tick helpers under Utils → Macros and run them. Scripts live in `MillcoUtils/macros/*.php`. The first line of the file docblock is the description shown in the UI.
+
+Currently:
+
+- **processDocumentation** — downloads and installs [ProcessDocumentation](https://processwire.com/modules/process-documentation/)
+
+Macros (and anything else) can use MillcoUtils helpers that mirror RockMigrations’ install API — no RockMigrations required:
+
+	$mu = wire('modules')->get('MillcoUtils');
+	$mu->installModule('PagePathHistory');
+	$mu->installModule('ProcessDocumentation', 'https://github.com/…/master.zip');
+	$mu->installModule('SomeModule', ['setting' => 'value'], 'https://…/master.zip');
+
+To add another macro: drop a PHP file in `macros/` and follow the same pattern as `processDocumentation.php`.
+
 # Things it doesn't yet but will soon.	
 
 - [ ] Configurable CSP

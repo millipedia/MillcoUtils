@@ -960,4 +960,133 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		$exporter = $this->wire(new RockMigrationsExporter());
 		return $exporter->export($type, $name, $overwrite);
 	}
+
+	/**
+	 * Install a module, optionally downloading it first and applying config.
+	 *
+	 * Same calling style as RockMigrations::installModule — safe to call repeatedly.
+	 *
+	 * ~~~~~
+	 * $mu->installModule('PagePathHistory');
+	 * $mu->installModule('ProcessDocumentation', 'https://github.com/…/master.zip');
+	 * $mu->installModule('SomeModule', ['setting' => 'value']);
+	 * $mu->installModule('SomeModule', ['setting' => 'value'], 'https://…/master.zip');
+	 * ~~~~~
+	 *
+	 * @param string $name Module class name
+	 * @param array|string $conf Config array, or download URL if string
+	 * @param array|string $options Options array (`url`, `force`), or download URL if string
+	 * @return Module|null
+	 */
+	public function installModule(string $name, array|string $conf = [], array|string $options = []): ?Module
+	{
+		if (is_string($conf)) {
+			$options = is_array($options) ? $options : [];
+			$options['url'] = $conf;
+			$conf = [];
+		}
+		if (is_string($options)) {
+			$options = ['url' => $options];
+		}
+		if (!is_array($options)) {
+			$options = [];
+		}
+
+		$opt = $this->wire(new WireData());
+		$opt->setArray([
+			'url' => '',
+			'force' => false,
+		]);
+		$opt->setArray($options);
+		if (is_array($conf)) {
+			$opt->conf = $conf;
+		}
+
+		$modules = $this->wire()->modules;
+		$config = $this->wire()->config;
+
+		if (!$modules->isInstalled($name)) {
+			$modules->refresh();
+		}
+
+		/** @var Module|null $module */
+		$module = $modules->get($name);
+
+		if (!$module) {
+			$path = $config->path($name);
+			$pathExists = ($path && $this->wire()->files->exists($path));
+
+			if ($opt->url && !$pathExists) {
+				$pathExists = (bool) $this->downloadModule((string) $opt->url);
+			}
+
+			if ($pathExists) {
+				$modules->refresh();
+				$module = $modules->install($name, ['force' => (bool) $opt->force]);
+			}
+		}
+
+		if ($module && is_array($opt->conf) && count($opt->conf)) {
+			$this->setModuleConfig($module, $opt->conf);
+		}
+
+		$i = 0;
+		while ($i++ < 10 && !$modules->isInstalled($name)) {
+			$modules->refresh();
+		}
+
+		return $module instanceof Module ? $module : null;
+	}
+
+	/**
+	 * Download a module zip from a URL into /site/modules/.
+	 *
+	 * @param string $url Zip URL (e.g. GitHub archive link)
+	 * @return string|false Destination directory on success, false on failure
+	 */
+	public function downloadModule(string $url): string|false
+	{
+		require_once $this->wire()->config->paths->modules . 'Process/ProcessModule/ProcessModuleInstall.php';
+
+		/** @var ProcessModuleInstall $installer */
+		$installer = $this->wire(new ProcessModuleInstall());
+		$downloaded = $installer->downloadModule($url);
+
+		if ($downloaded !== false) {
+			return $downloaded;
+		}
+
+		$this->error("Tried to download module from $url but failed");
+		return false;
+	}
+
+	/**
+	 * Save module config, merging over existing settings by default.
+	 *
+	 * @param Module|string $module
+	 * @param array $data
+	 * @param bool $reset If true, replace config instead of merging
+	 * @return Module|false
+	 */
+	public function setModuleConfig(Module|string $module, array $data, bool $reset = false): Module|false
+	{
+		$modules = $this->wire()->modules;
+		$name = is_object($module) ? $module->className() : $module;
+		$installed = $modules->get($name);
+
+		if (!$installed) {
+			return false;
+		}
+
+		if (!$reset) {
+			$old = $modules->getConfig($installed);
+			if (!is_array($old)) {
+				$old = [];
+			}
+			$data = array_merge($old, $data);
+		}
+
+		$modules->saveConfig($installed, $data);
+		return $installed;
+	}
 }
