@@ -187,7 +187,6 @@ It's dead handy.
 
 Tick helpers under Utils → Macros and run them. Each file in `MillcoUtils/macros/` returns a PHP array:
 
-	<?php
 	namespace ProcessWire;
 
 	return [
