@@ -1,4 +1,5 @@
 <?php
+
 namespace ProcessWire;
 
 require_once __DIR__ . '/RockMigrationsExporter.php';
@@ -40,12 +41,9 @@ class ProcessMillcoUtils extends Process implements Module
 		parent::init();
 	}
 
-	public function __construct()
-	{
+	public function __construct() {}
 
-	}
 
-	
 	public function ___execute()
 	{
 
@@ -54,9 +52,9 @@ class ProcessMillcoUtils extends Process implements Module
 		if (wire('page')->template == 'admin' && wire('page')->name == 'analytics') {
 
 			$moduleConfig = $this->modules->getConfig('MillcoUtils');
-			if(isset($moduleConfig['analytics_public_dashboard']) && $moduleConfig['analytics_public_dashboard'] != ''	){
+			if (isset($moduleConfig['analytics_public_dashboard']) && $moduleConfig['analytics_public_dashboard'] != '') {
 				wire()->session->redirect($moduleConfig['analytics_public_dashboard']);
-			}else{
+			} else {
 				return 'No public dashboard address set. Please add one in the Utils page.';
 			}
 		}
@@ -77,7 +75,7 @@ class ProcessMillcoUtils extends Process implements Module
 			$this->handleMacros($this->input->post);
 		}
 
-			if ($this->input->post('submit')) {
+		if ($this->input->post('submit')) {
 			$this->mu_save_settings($this->input->post);
 		}
 
@@ -92,14 +90,14 @@ class ProcessMillcoUtils extends Process implements Module
 
 		// Show info panel. Might be nice to be able to add to this. Or stick it in an expando box like the other sections.
 
-		$admin_page_markup .='<div class="uk-panel uk-background-muted uk-padding-small uk-margin-bottom">';
-			$panel_info = wire('files')->render(wire('config')->paths->siteModules . 'MillcoUtils/panel_info.php', ['moduleConfig' => $moduleConfig]);
-			$admin_page_markup .= $panel_info;
+		$admin_page_markup .= '<div class="uk-panel uk-background-muted uk-padding-small uk-margin-bottom">';
+		$panel_info = wire('files')->render(wire('config')->paths->siteModules . 'MillcoUtils/panel_info.php', ['moduleConfig' => $moduleConfig]);
+		$admin_page_markup .= $panel_info;
 		$admin_page_markup .= '</div>';
 
 		// Render the rock migrations export form.
 		$admin_page_markup .= $this->renderRockMigrationsExportForm();
-		
+
 		// Render the macros form.
 		$admin_page_markup .= $this->renderMacrosForm();
 
@@ -170,7 +168,7 @@ class ProcessMillcoUtils extends Process implements Module
 		foreach (new \DirectoryIterator($icons_directory) as $file) {
 			if ($file->isFile()) {
 
-				if($file->getExtension() == 'svg'){
+				if ($file->getExtension() == 'svg') {
 					$icons_array[] = $file->getBasename('.svg');
 				}
 			}
@@ -206,7 +204,7 @@ class ProcessMillcoUtils extends Process implements Module
 		$field->value = $moduleConfig['holding_page'];
 		$field->columnWidth = 50;
 		$fieldset->add($field);
-		
+
 
 		/** @var InputfieldText $field */
 		$field = $this->modules->get('InputfieldText');
@@ -261,7 +259,7 @@ class ProcessMillcoUtils extends Process implements Module
 		$field->value = $moduleConfig['millco_variables'];
 		$field->columnWidth = 50;
 		$fieldset->add($field);
-		
+
 		$form->add($fieldset);
 
 		// ======  Log options
@@ -290,7 +288,7 @@ class ProcessMillcoUtils extends Process implements Module
 		$field->value = $moduleConfig['logs_prune_size'];
 		$field->columnWidth = 50;
 		$fieldset->add($field);
-		
+
 		$form->add($fieldset);
 
 
@@ -406,7 +404,7 @@ class ProcessMillcoUtils extends Process implements Module
 
 		// ======  Remove old install files
 
-		if($this->install_files_detected()){
+		if ($this->install_files_detected()) {
 
 			/** @var InputfieldFieldset $fieldset */
 			$fieldset = $this->modules->get('InputfieldFieldset');
@@ -414,7 +412,7 @@ class ProcessMillcoUtils extends Process implements Module
 			$fieldset->description = '';
 
 			$fieldset->collapsed = Inputfield::collapsedNo;
-		
+
 			/** @var InputfieldCheckbox $field */
 			$field = $this->modules->get('InputfieldCheckbox');
 			$field->name = 'remove_install_files';
@@ -425,9 +423,8 @@ class ProcessMillcoUtils extends Process implements Module
 			$fieldset->add($field);
 
 			$form->add($fieldset);
-
 		}
-	
+
 		/** @var InputfieldSubmit $button */
 		$button = $this->modules->get('InputfieldSubmit');
 		$button->value = 'Save';
@@ -456,45 +453,42 @@ class ProcessMillcoUtils extends Process implements Module
 		// Get an array of all the config options we can have.
 		/** @var MillcoUtils $mu_instance */
 		$mu_instance = $this->modules->get('MillcoUtils');
-		$mu_config_defaults =$mu_instance->get_defaults();
+		$mu_config_defaults = $mu_instance->get_defaults();
 
 		// loop through our possible config options
 		// and if we have posted value then update it.
 
 		$settings_updated = false;
-		$message_content='';
+		$message_content = '';
 
-		foreach($mu_config_defaults as $index => $value){
+		foreach ($mu_config_defaults as $index => $value) {
 
 			// if we have a posted value then update our value with that
 			// TODO should be sanitizing these really...
 			// I suspect I'm doing this in a slightly odd way.
-			 if(isset($post_data[$index])){
+			if (isset($post_data[$index])) {
 
-				if($value != $post_data[$index]){
-					
-				$value=$post_data[$index];
-				$settings_updated = true;
+				if ($value != $post_data[$index]) {
+
+					$value = $post_data[$index];
+					$settings_updated = true;
 				}
+			}
 
-
-			 }
-
-			 $mu_config_data[$index]=$value;
-
+			$mu_config_data[$index] = $value;
 		}
 
-		if($settings_updated){
-			$message_content.='Settings saved.';
-		}else{
-			$message_content.='No settings updated.';
+		if ($settings_updated) {
+			$message_content .= 'Settings saved.';
+		} else {
+			$message_content .= 'No settings updated.';
 		}
 
-		if(isset($post_data['remove_install_files'])){
-			if($this->remove_install_files()){
-				$message_content.=' Install files removed.';
-			}else{
-				$message_content.=' No install files removed.';
+		if (isset($post_data['remove_install_files'])) {
+			if ($this->remove_install_files()) {
+				$message_content .= ' Install files removed.';
+			} else {
+				$message_content .= ' No install files removed.';
 			}
 		}
 
@@ -513,23 +507,23 @@ class ProcessMillcoUtils extends Process implements Module
 	 * 
 	 * @return bool
 	 */
-	function install_files_detected(){
+	function install_files_detected()
+	{
 
 		$site_root = wire('config')->paths->root;
 
 		// iterate through the root directory
-		foreach(new \DirectoryIterator($site_root) as $file){
+		foreach (new \DirectoryIterator($site_root) as $file) {
 
 			// if we find any directories that start with .wire-3 then return true
-			if($file->isDir() && substr($file->getFilename(), 0, 7) == '.wire-3'){
+			if ($file->isDir() && substr($file->getFilename(), 0, 7) == '.wire-3') {
 				return true;
 			}
 
 			// also check for files beginning index-3 or htaccess-3.
-			if($file->isFile() && (substr($file->getFilename(), 0, 8) == 'index-3.' || substr($file->getFilename(), 0, 11) == 'htaccess-3.')){ 
+			if ($file->isFile() && (substr($file->getFilename(), 0, 8) == 'index-3.' || substr($file->getFilename(), 0, 11) == 'htaccess-3.')) {
 				return true;
 			}
-
 		}
 
 		return false;
@@ -539,35 +533,34 @@ class ProcessMillcoUtils extends Process implements Module
 	 * Remove the install files from the site root.
 	 * 
 	 */
-	function remove_install_files(){
+	function remove_install_files()
+	{
 
 		$files_removed = false;
 		$site_root = wire('config')->paths->root;
-		
-		foreach(new \DirectoryIterator($site_root) as $file){
 
-			if($file->isDir() && substr($file->getFilename(), 0, 7) == '.wire-3'){
+		foreach (new \DirectoryIterator($site_root) as $file) {
 
-				if(wire('files')->rmdir($site_root . $file->getFilename(), true)){
+			if ($file->isDir() && substr($file->getFilename(), 0, 7) == '.wire-3') {
+
+				if (wire('files')->rmdir($site_root . $file->getFilename(), true)) {
 					$this->log("Removed directory: " . $file->getFilename());
 					$files_removed = true;
-				}else{	
+				} else {
 					$this->log("Failed to remove directory: " . $file->getFilename());
 				}
 			}
 
 			// also check for files beginning index-3 or htaccess-3.
-			if($file->isFile() && (substr($file->getFilename(), 0, 8) == 'index-3.' || substr($file->getFilename(), 0, 11) == 'htaccess-3.')){
+			if ($file->isFile() && (substr($file->getFilename(), 0, 8) == 'index-3.' || substr($file->getFilename(), 0, 11) == 'htaccess-3.')) {
 
-				if(unlink($site_root . $file->getFilename())){
+				if (unlink($site_root . $file->getFilename())) {
 					$this->log("Removed file: " . $file->getFilename());
 					$files_removed = true;
-				}else{
+				} else {
 					$this->log("Failed to remove file: " . $file->getFilename());
 				}
-				
 			}
-
 		}
 
 		return $files_removed;
@@ -630,11 +623,22 @@ class ProcessMillcoUtils extends Process implements Module
 		$field->columnWidth = 100;
 		$fieldset->add($field);
 
+		$rockmigrations_dir = wire('config')->paths->site . 'RockMigrations/';
+		if (!is_dir($rockmigrations_dir)) {
+			/** @var InputfieldMarkup $warning */
+			$warning = $this->modules->get('InputfieldMarkup');
+			$warning->value = '<div class="uk-alert uk-alert-warning">The <code>site/RockMigrations/</code> directory does not exist. Create it before exporting.</div>';
+			$fieldset->add($warning);
+		}
+
 		/** @var InputfieldSubmit $button */
 		$button = $this->modules->get('InputfieldSubmit');
 		$button->name = 'rm_export_submit';
 		$button->value = 'Export';
 		$button->icon = 'download';
+		if (!is_dir($rockmigrations_dir)) {
+			$button->attr('disabled', 'disabled');
+		}
 		$fieldset->add($button);
 
 		$form->add($fieldset);
@@ -650,6 +654,13 @@ class ProcessMillcoUtils extends Process implements Module
 	 */
 	protected function handleRockMigrationsExport(WireInputData $post): void
 	{
+		$rockmigrations_dir = wire('config')->paths->site . 'RockMigrations/';
+		if (!is_dir($rockmigrations_dir)) {
+			$this->error('The site/RockMigrations/ directory does not exist. Create it before exporting.');
+			$this->session->redirect('./');
+			return;
+		}
+
 		$overwrite = (bool) $post->rm_export_overwrite;
 		$targets = [];
 
@@ -838,5 +849,4 @@ class ProcessMillcoUtils extends Process implements Module
 
 		return $macros;
 	}
-
 }
