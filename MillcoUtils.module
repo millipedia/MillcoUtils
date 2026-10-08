@@ -665,11 +665,6 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 	public function modialog()
 	{
 
-		// Bail out early if we don't have permission to do this.
-		if (!(wire('user')->hasPermission('millco-utils'))) {
-			return;
-		}
-
 		$path = wire('config')->paths->siteModules . 'MillcoUtils/markup/modialog.php';
 
 		$modialog_markup = wire('files')->render($path, ['mu' => $this]);
