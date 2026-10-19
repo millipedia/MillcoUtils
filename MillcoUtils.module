@@ -714,6 +714,14 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 			$classes = ' image_fluid';
 		}
 
+		// check we haven't been given a width or height in the options array.
+		if (isset($options['width']) && $options['width']) {
+			$width = $options['width'];
+		}
+		if (isset($options['height']) && $options['height']) {
+			$height = $options['height'];
+		}
+
 		if ($image) {
 
 			// Resize our image.
@@ -809,10 +817,15 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 
 			$image_tag_markup = '<img ';
 			$image_tag_markup .= ' class="' . $classes . '" ';
-			$image_tag_markup .= ' src="' . $thumb->url . '" ';
+
+			if (isset($options['use_webp']) && $options['use_webp']) {
+				$image_tag_markup .= ' src="' . $thumb->webp->url . '" ';
+			} else {
+				$image_tag_markup .= ' src="' . $thumb->url . '" ';
+			}
 			$image_tag_markup .= ' alt="' . $sanitizer->entities1($alt) . '" ';
-			$image_tag_markup .= ' width="' . $thumb->width . '" ';
-			$image_tag_markup .= ' height="' . $thumb->height . '" ';
+			$image_tag_markup .= ' width="' . $width . '" ';
+			$image_tag_markup .= ' height="' . $height . '" ';
 			$image_tag_markup .= $image_attributes . ' ';
 			$image_tag_markup .= ' ' . $lazy . '>';
 
