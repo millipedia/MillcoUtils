@@ -246,7 +246,10 @@ class ProcessMillcoUtils extends Process implements Module
 		$field->description = '';
 		$field->notes = 'Enter a comma separated list of text formatter replacements to apply.';
 		$field->name = 'text_formatter_replacements';
-		$field->value = $moduleConfig['text_formatter_replacements'];
+
+		$field->value = $moduleConfig['text_formatter_replacements'] ?? '';
+
+		
 		$field->columnWidth = 50;
 		$fieldset->add($field);
 
@@ -256,7 +259,9 @@ class ProcessMillcoUtils extends Process implements Module
 		$field->description = '';
 		$field->notes = 'Enter key value pairs eg. "restaurant" : "Alice\\\'s", one per line. They should be valid JSON format so you\'ll need to escape characters like quotes and forward slashes.';
 		$field->name = 'millco_variables';
-		$field->value = $moduleConfig['millco_variables'];
+
+		$field->value = $moduleConfig['millco_variables'] ?? '';
+
 		$field->columnWidth = 50;
 		$fieldset->add($field);
 
