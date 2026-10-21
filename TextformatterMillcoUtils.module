@@ -48,7 +48,7 @@ class TextformatterMillcoUtils extends Textformatter {
 		$value = str_replace(' class="MsoNormal"','', $value);
 
 		// Replace any text formatter replacements.
-		$text_formatter_replacements = $this->wire->modules->getConfig('MillcoUtils')['text_formatter_replacements'];
+		$text_formatter_replacements = $this->wire->modules->getConfig('MillcoUtils')['text_formatter_replacements'] ?? '';
 		if($text_formatter_replacements){
 			$replacements = explode("\n", $text_formatter_replacements);
 			foreach($replacements as $replacement){
