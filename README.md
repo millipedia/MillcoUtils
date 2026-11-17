@@ -183,6 +183,16 @@ Honestly I hardly ever use this. Might take it out one of these days
 You can select fields and templates to export to slimmed down files for use in RockMigrations. This is the 'Config migrations' pattern where field and template definitions are kept in separate files in /site/RockMigrations/fields|templates 
 It's dead handy.
 
+## Auto-export on edit
+
+Tick **RockMigrations auto-export → Export on edit** on the Utils page and any field or template you save in the ProcessWire admin is written to `site/RockMigrations/fields|templates` for you. Field context changes and fields added to / removed from a template re-export the affected templates too.
+
+- Exports are queued and written once at the end of the request.
+- A file is only rewritten when the exported config has changed (the "Exported on … by …" line is ignored), so saving without changes leaves git clean.
+- Nothing is exported while RockMigrations is running its own migrations, from the CLI, or for generated system templates such as `repeater_*`.
+- Results (and failures) are written to the `MillcoUtils` log.
+- Renamed or deleted fields and templates leave their old file behind; delete it by hand.
+
 # Macros
 
 Tick helpers under Utils → Macros and run them. Each file in `MillcoUtils/macros/` returns a PHP array:

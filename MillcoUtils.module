@@ -20,6 +20,14 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 	public $variables = []; // a list of variables we can use in the templates.
 	private ?\NumberFormatter $gbp_formatter = null;
 
+	/**
+	 * Fields and templates waiting to be auto-exported to RockMigrations files.
+	 *
+	 * @var array<string, array{0: string, 1: string}> "type/name" => [type, name]
+	 */
+	protected array $rmExportQueue = [];
+	protected bool $rmExportShutdownRegistered = false;
+
 	public static function getModuleInfo()
 	{
 		return [
@@ -86,6 +94,7 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		'inline_image_path' => 'icons',
 		'load_admin_tweaks' => '0',
 		'load_admin_scripts' => '0',
+		'rm_auto_export' => '0',
 		'text_formatter_replacements' => ''
 
 	);
@@ -197,6 +206,16 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		// Cos we use HTMX in various modules I just want to be able to load it in one place.
 		if (array_key_exists('load_admin_scripts', $moduleConfig) && $moduleConfig['load_admin_scripts']) {
 			$this->config->scripts->add($this->config->urls->MillcoUtils . "lib/htmx/htmx.min.js");
+		}
+
+		// Auto-export fields and templates to RockMigrations files when they are
+		// edited in the admin, if the user has opted in.
+		if (!empty($moduleConfig['rm_auto_export']) && $this->modules->isInstalled('RockMigrations')) {
+			$this->addHookAfter('Fields::saved', $this, 'hookRmFieldSaved');
+			$this->addHookAfter('Fields::saveFieldgroupContext', $this, 'hookRmFieldContextSaved');
+			$this->addHookAfter('Templates::saved', $this, 'hookRmTemplateSaved');
+			$this->addHookAfter('Fieldgroups::saved', $this, 'hookRmFieldgroupSaved');
+			$this->addHookAfter('Fieldgroups::saveContext', $this, 'hookRmFieldgroupSaved');
 		}
 
 		// add a hook to prune logs by date if the user has opted in.
@@ -967,6 +986,124 @@ class MillcoUtils extends WireData implements Module, ConfigurableModule
 		/** @var RockMigrationsExporter $exporter */
 		$exporter = $this->wire(new RockMigrationsExporter());
 		return $exporter->export($type, $name, $overwrite);
+	}
+
+	/**
+	 * Hook after Fields::saved — queue the saved field for auto-export.
+	 */
+	public function hookRmFieldSaved(HookEvent $event): void
+	{
+		$field = $event->arguments(0);
+		if ($field instanceof Field) $this->queueRockMigrationExport('fields', $field->name);
+	}
+
+	/**
+	 * Hook after Fields::saveFieldgroupContext — a field context change alters the
+	 * export of every template using that fieldgroup, so queue those templates.
+	 */
+	public function hookRmFieldContextSaved(HookEvent $event): void
+	{
+		$fieldgroup = $event->arguments(1);
+		if ($fieldgroup instanceof Fieldgroup) $this->queueFieldgroupTemplates($fieldgroup);
+	}
+
+	/**
+	 * Hook after Templates::saved — queue the saved template for auto-export.
+	 */
+	public function hookRmTemplateSaved(HookEvent $event): void
+	{
+		$template = $event->arguments(0);
+		if ($template instanceof Template) $this->queueRockMigrationExport('templates', $template->name, $template);
+	}
+
+	/**
+	 * Hook after Fieldgroups::saved and Fieldgroups::saveContext — fields added to,
+	 * removed from or reordered within a template are saved on its fieldgroup.
+	 */
+	public function hookRmFieldgroupSaved(HookEvent $event): void
+	{
+		$fieldgroup = $event->arguments(0);
+		if ($fieldgroup instanceof Fieldgroup) $this->queueFieldgroupTemplates($fieldgroup);
+	}
+
+	/**
+	 * Queue every template that uses the given fieldgroup for auto-export.
+	 */
+	protected function queueFieldgroupTemplates(Fieldgroup $fieldgroup): void
+	{
+		foreach ($fieldgroup->getTemplates() as $template) {
+			$this->queueRockMigrationExport('templates', $template->name, $template);
+		}
+	}
+
+	/**
+	 * Add a field or template to the auto-export queue.
+	 *
+	 * Nothing is written here. Several saves usually happen in one admin request
+	 * (field, then fieldgroup, then template) so the queue is flushed once at the end
+	 * of the request, when the saved state is complete.
+	 *
+	 * @param string $type fields|templates
+	 * @param string $name Field or template name
+	 * @param Template|null $template Pass for templates so system templates can be skipped
+	 */
+	protected function queueRockMigrationExport(string $type, string $name, ?Template $template = null): void
+	{
+		if ($name === '' || str_ends_with($name, '_PWTMP')) return;
+
+		// Only react to edits made in the admin by a logged in user.
+		if (PHP_SAPI === 'cli' || !$this->config->admin || !$this->user->isLoggedin()) return;
+
+		// Generated templates (e.g. repeater_*) are not meant to be migrated.
+		if ($template && ($template->flags & Template::flagSystem)) return;
+
+		// Do not export while RockMigrations itself is applying migrations,
+		// otherwise we would write back the files it just read.
+		/** @var RockMigrations $rm */
+		$rm = $this->modules->get('RockMigrations');
+		if (!$rm || $rm->ismigrating) return;
+
+		$this->rmExportQueue["$type/$name"] = [$type, $name];
+
+		if (!$this->rmExportShutdownRegistered) {
+			$this->rmExportShutdownRegistered = true;
+			register_shutdown_function([$this, 'flushRockMigrationExports']);
+		}
+	}
+
+	/**
+	 * Write every queued field and template to its RockMigrations file.
+	 *
+	 * Runs on shutdown so it still happens when the admin redirects after saving.
+	 * Files are only rewritten when the export differs from the existing file
+	 * (ignoring the export date/user line), so no-change saves leave git clean.
+	 * Results go to the MillcoUtils log, as admin notices are gone by then.
+	 */
+	public function flushRockMigrationExports(): void
+	{
+		$queue = $this->rmExportQueue;
+		$this->rmExportQueue = [];
+		if ($queue === []) return;
+
+		$log = $this->wire()->log;
+		$dir = $this->config->paths->site . 'RockMigrations/';
+		if (!is_dir($dir)) {
+			$log->save('MillcoUtils', 'RockMigrations auto-export skipped: site/RockMigrations/ does not exist.');
+			return;
+		}
+
+		require_once __DIR__ . '/RockMigrationsExporter.php';
+
+		foreach ($queue as [$type, $name]) {
+			try {
+				/** @var RockMigrationsExporter $exporter */
+				$exporter = $this->wire(new RockMigrationsExporter());
+				$file = $exporter->export($type, $name, true, true);
+				if ($exporter->wasWritten) $log->save('MillcoUtils', "RockMigrations auto-export wrote $file");
+			} catch (\Throwable $th) {
+				$log->save('MillcoUtils', "RockMigrations auto-export failed for $type/$name: " . $th->getMessage());
+			}
+		}
 	}
 
 	/**

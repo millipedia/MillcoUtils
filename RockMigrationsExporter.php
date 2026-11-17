@@ -18,15 +18,25 @@ class RockMigrationsExporter extends Wire
 	const dummyFieldName = 'tmp_defaults';
 
 	/**
+	 * Whether the last export() call wrote the file.
+	 *
+	 * False when $onlyIfChanged was set and the existing file already matched.
+	 */
+	public bool $wasWritten = false;
+
+	/**
 	 * Export a field or template to site/RockMigrations/{type}/{name}.php
 	 *
 	 * @param string $type fields|templates
 	 * @param string $name Field or template name
 	 * @param bool $overwrite Replace an existing migration file
-	 * @return string Absolute path to the written file
+	 * @param bool $onlyIfChanged Leave an existing file alone when only the export header (date/user) differs
+	 * @return string Absolute path to the migration file
 	 */
-	public function export(string $type, string $name, bool $overwrite = false): string
+	public function export(string $type, string $name, bool $overwrite = false, bool $onlyIfChanged = false): string
 	{
+		$this->wasWritten = false;
+
 		$type = $this->sanitizer->fieldName($type);
 		$name = $this->sanitizer->fieldName($name);
 
@@ -92,9 +102,28 @@ class RockMigrationsExporter extends Wire
 		$php .= " */\n\n";
 		$php .= "return $body;\n";
 
+		if ($onlyIfChanged && is_file($file)) {
+			$existing = (string) file_get_contents($file);
+			if ($this->stripExportHeader($existing) === $this->stripExportHeader($php)) {
+				return $file;
+			}
+		}
+
 		$this->files->filePutContents($file, $php);
+		$this->wasWritten = true;
 
 		return $file;
+	}
+
+	/**
+	 * Blank the "Exported from ProcessWire on … by …" line so two exports can be compared.
+	 *
+	 * @param string $php Migration file contents
+	 * @return string
+	 */
+	protected function stripExportHeader(string $php): string
+	{
+		return (string) preg_replace('/^ \* Exported from ProcessWire on .*$/m', ' * Exported', $php);
 	}
 
 	/**

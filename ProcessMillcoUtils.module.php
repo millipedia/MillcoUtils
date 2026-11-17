@@ -267,6 +267,29 @@ class ProcessMillcoUtils extends Process implements Module
 
 		$form->add($fieldset);
 
+		// ======  RockMigrations auto-export
+
+		/** @var InputfieldFieldset $fieldset */
+		$fieldset = $this->modules->get('InputfieldFieldset');
+		$fieldset->label = 'RockMigrations auto-export';
+		$fieldset->icon = 'code';
+		$fieldset->collapsed = Inputfield::collapsedYes;
+
+		/** @var InputfieldCheckbox $field */
+		$field = $this->modules->get('InputfieldCheckbox');
+		$field->name = 'rm_auto_export';
+		$field->label = 'Export on edit';
+		$field->description = 'When a field or template is saved in the admin, write it to site/RockMigrations/ automatically. Files are only rewritten if the exported config has changed.';
+		$field->notes = 'Needs RockMigrations and an existing site/RockMigrations/ directory. Results are written to the MillcoUtils log. Renamed or deleted fields and templates leave their old file behind.';
+		$field->value = 1;
+		$field->columnWidth = 100;
+		if (!empty($moduleConfig['rm_auto_export'])) {
+			$field->checked(true);
+		}
+		$fieldset->add($field);
+
+		$form->add($fieldset);
+
 		// ======  Log options
 
 		/** @var InputfieldFieldset $fieldset */
